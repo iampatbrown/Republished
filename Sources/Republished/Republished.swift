@@ -37,11 +37,14 @@ public struct Republished<ObjectType> where ObjectType: ObservableObject {
 
   private func republish<EnclosingSelf: AnyObject>(to object: EnclosingSelf) {
     guard self.relay.changePublisher == nil else { return }
-    self.relay.changePublisher = changePublisher(for: object) ?? ObservableObjectPublisher()
-      .eraseToAnyPublisher()
+    self.relay.changePublisher = observableObjectPublisher(for: object)
+    self.relay.cancellable = self.observed.wrappedValue.objectWillChange.sink { _ in
+      self.relay.changePublisher?.send()
+    }
   }
 
   class Relay {
-    var changePublisher: AnyPublisher<Void, Never>?
+    var changePublisher: ObservableObjectPublisher?
+    var cancellable: AnyCancellable?
   }
 }

@@ -72,7 +72,7 @@ public struct ScopedEnvironmentObject<ObjectType, Scope, Value>: DynamicProperty
     func update(root: ObjectType) {
       guard self.root.map({ $0 !== root }) ?? true else { return }
       self.root = root
-      if let objectWillChange = changePublisher(for: root[keyPath: self.keyPath]) {
+      if let objectWillChange = observableObjectPublisher(for: root[keyPath: self.keyPath]) {
         self.cancellable = objectWillChange.sink { [weak self] in self?.objectWillChange.send() }
       } else {
         self.cancellable = root[keyPath: self.scopeKeyPath].objectWillChange.sink { [weak self, weak root] _ in
