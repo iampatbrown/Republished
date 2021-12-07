@@ -13,7 +13,7 @@ extension DependencyKey {
   public static var testValue: Value { Self.defaultValue }
   public static var previewValue: Value { Self.defaultValue }
 
-  static var defaultValueForEnvironment: Value {
+  fileprivate static var defaultValueForEnvironment: Value {
     if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return Self.testValue }
     else if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return Self.previewValue }
     return Self.defaultValue
@@ -21,19 +21,13 @@ extension DependencyKey {
 }
 
 public struct Dependencies {
-  private var storage: [[ObjectIdentifier: Any]] = [[:]]
+  fileprivate var storage: [[ObjectIdentifier: Any]] = [[:]]
+  private var isRunningWithDependenciesBody: Bool { self.storage.count > 1 }
 
   public init() {}
 
   public init(_ transform: (inout Dependencies) -> Void) {
     transform(&self)
-  }
-
-  mutating func withDependencies<Result>(_ dependencies: Dependencies, _ body: () -> Result) -> Result {
-    self.storage.append(self.storage.last!)
-    for (id, value) in dependencies.storage.last! { self.storage[self.storage.count - 1][id] = value }
-    defer { self.storage.removeLast() }
-    return body()
   }
 
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
@@ -86,12 +80,31 @@ extension Dependencies {
 
   static func `for`<ObjectType: AnyObject>(_ object: ObjectType) -> Dependencies {
     let id = Dependencies.id(for: object)
-    return parentDependencies(for: id) ?? dependenciesStore[id] ?? Dependencies.shared
+
+    if var dependencies = parentDependencies(for: id) ?? dependenciesStore[id] {
+      if Dependencies.shared.isRunningWithDependenciesBody {
+        for (id, value) in Dependencies.shared.storage.last! {
+          dependencies.storage[dependencies.storage.count - 1][id] = value
+        }
+      }
+      return dependencies
+    } else {
+      return Dependencies.shared
+    }
   }
 
   static func id<ObjectType: AnyObject>(for object: ObjectType) -> ObjectIdentifier {
     observableObjectPublisher(for: object).map(ObjectIdentifier.init) ?? ObjectIdentifier(object)
   }
+}
+
+public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () -> Result) -> Result {
+  Dependencies.shared.storage.append(Dependencies.shared.storage.last!)
+  for (id, value) in dependencies.storage.last! {
+    Dependencies.shared.storage[Dependencies.shared.storage.count - 1][id] = value
+  }
+  defer { Dependencies.shared.storage.removeLast() }
+  return body()
 }
 
 var dependenciesStore: [ObjectIdentifier: Dependencies] = [:]

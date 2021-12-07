@@ -6,7 +6,9 @@ private protocol AnyObservableObjectPublisher {
   static func observableObjectPublisher(for object: Any) -> ObservableObjectPublisher?
 }
 
-extension Box: AnyObservableObjectPublisher where T: ObservableObject, T.ObjectWillChangePublisher == ObservableObjectPublisher {
+extension Box: AnyObservableObjectPublisher where T: ObservableObject,
+  T.ObjectWillChangePublisher == ObservableObjectPublisher
+{
   fileprivate static func observableObjectPublisher(for object: Any) -> ObservableObjectPublisher? {
     (object as? T).map(\.objectWillChange)
   }
@@ -19,4 +21,3 @@ func observableObjectPublisher(for object: Any) -> ObservableObjectPublisher? {
   }
   return _openExistential(type(of: object), do: open)
 }
-

@@ -2,19 +2,19 @@ import Combine
 @testable import Republished
 import XCTest
 
-class Parent: ObservableObject {
+private class Parent: ObservableObject {
   @Republished var child = Child()
 }
 
-class ParentWithOptional: ObservableObject {
+private class ParentWithOptional: ObservableObject {
   @Republished var child: Child?
 }
 
-class ParentWithCollection: ObservableObject {
+private class ParentWithCollection: ObservableObject {
   @Republished var children: [Child] = []
 }
 
-class Child: ObservableObject {
+private class Child: ObservableObject {
   @Published var value: Int
   init(value: Int = 0) {
     self._value = .init(wrappedValue: value)

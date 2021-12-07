@@ -14,6 +14,7 @@ public struct WithDependencies<ObjectType: AnyObject>: DynamicProperty {
     switch storage.state {
     case let .initially(thunk, dependencies):
       let object = withDependencies(dependencies, thunk)
+      storage.state = .object(object)
       storage.cancellable = Dependencies.bind(dependencies, to: object)
       return object
     case let .object(object):
@@ -35,8 +36,3 @@ public struct WithDependencies<ObjectType: AnyObject>: DynamicProperty {
     }
   }
 }
-
-public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () -> Result) -> Result {
-  Dependencies.shared.withDependencies(dependencies, body)
-}
-

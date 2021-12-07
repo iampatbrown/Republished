@@ -14,12 +14,6 @@ public struct Action<ObjectType, Value>: DynamicProperty
     self.action = action
   }
 
-  public init(
-    _ action: @escaping (ObjectType) -> () -> Void
-  ) where Value == () -> Void {
-    self.action = action
-  }
-
   public init<Input>(
     _ action: @escaping (ObjectType) -> (Input) -> Void
   ) where Value == (Input) -> Void {
@@ -29,6 +23,12 @@ public struct Action<ObjectType, Value>: DynamicProperty
   public init<Output>(
     _ action: @escaping (ObjectType) -> () -> (Output)
   ) where Value == () -> (Output) {
+    self.action = action
+  }
+
+  public init(
+    _ action: @escaping (ObjectType) -> () -> Void
+  ) where Value == () -> Void {
     self.action = action
   }
 

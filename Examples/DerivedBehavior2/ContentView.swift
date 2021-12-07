@@ -3,6 +3,9 @@ import DerivedBehavior
 import Republished
 import SwiftUI
 
+// Point-Free / 0150-derived-behavior-pt5
+// https://github.com/pointfreeco/episode-code-samples/tree/main/0150-derived-behavior-pt5/
+
 class CounterViewModel: ObservableObject {
   @Published var alert: Alert?
   @Published var count = 0
@@ -210,10 +213,6 @@ class AppViewModel: ObservableObject {
     self.counters.reduce(0) { $0 + $1.counter.count }
   }
 
-  func f() -> Int {
-    1
-  }
-
   func addButtonTapped() {
     let counterViewModel = CounterViewModel(
       onFact: { [weak self] count, fact in
@@ -293,7 +292,3 @@ struct _Previews: PreviewProvider {
     }
   }
 }
-
-let action = AppViewModel.addButtonTapped
-
-let action2 = AppViewModel.f
