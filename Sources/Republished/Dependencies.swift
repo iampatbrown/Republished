@@ -78,15 +78,15 @@ extension Dependencies {
     }
   }
 
+  static func parentDependencies(for id: ObjectIdentifier) -> Dependencies? {
+    guard var rootId = inheritanceRelationships[id]?() else { return nil }
+    while let parentId = inheritanceRelationships[rootId]?() { rootId = parentId }
+    return dependenciesStore[rootId]
+  }
+
   static func `for`<ObjectType: AnyObject>(_ object: ObjectType) -> Dependencies {
     let id = Dependencies.id(for: object)
-    if let dependencies = inheritanceRelationships[id]?().flatMap({ dependenciesStore[$0] }) {
-      return dependencies
-    } else if let dependencies = dependenciesStore[id] {
-      return dependencies
-    } else {
-      return Dependencies.shared
-    }
+    return parentDependencies(for: id) ?? dependenciesStore[id] ?? Dependencies.shared
   }
 
   static func id<ObjectType: AnyObject>(for object: ObjectType) -> ObjectIdentifier {

@@ -129,8 +129,9 @@ extension ObservableObject {
 extension Collection where Element: ObservableObject {
   func republish(to subject: Republished<Self>.Subject, inheritDependencies: Bool) {
     subject.cancellable = nil
-    let changeCancellables = self
-      .map { $0.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() } }
+    let changeCancellables = self.map {
+      $0.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() }
+    }
     let dependencyCancellables = inheritDependencies ? self.map {
       Dependencies.bindInheritance($0) { [weak subject] in subject?.changePublisher.flatMap(Dependencies.id) }
     } : nil

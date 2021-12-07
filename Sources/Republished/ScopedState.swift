@@ -2,8 +2,7 @@ import Combine
 import SwiftUI
 
 @propertyWrapper
-// TODO: Shorter name? Maybe just @Scoped...
-public struct EnvironmentObjectState<ObjectType, Value>: DynamicProperty
+public struct ScopedState<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject
 {
   @UnobservedEnvironmentObject var root: ObjectType
@@ -58,15 +57,19 @@ public struct EnvironmentObjectState<ObjectType, Value>: DynamicProperty
     func update(root: ObjectType) {
       guard self.root.map({ $0 !== root }) ?? true else { return }
       self.root = root
-      self.cancellable = root.objectWillChange.sink { [weak self, weak root] _ in
-        guard let initialValue = self?.value else { return }
-        DispatchQueue.main.async { [weak self, weak root] in
-          guard
-            let self = self,
-            !self.isSending,
-            let newValue = root?[keyPath: self.keyPath],
-            !isEqual(initialValue, newValue) else { return }
-          self.currentValue = newValue
+      if let changePublisher = observableObjectPublisher(for: root[keyPath: self.keyPath]) {
+        self.cancellable = changePublisher.sink { [weak self] in self?.objectWillChange.send() }
+      } else {
+        self.cancellable = root.objectWillChange.sink { [weak self, weak root] _ in
+          guard let initialValue = self?.value else { return }
+          DispatchQueue.main.async { [weak self, weak root] in
+            guard
+              let self = self,
+              !self.isSending,
+              let newValue = root?[keyPath: self.keyPath],
+              !isEqual(initialValue, newValue) else { return }
+            self.currentValue = newValue
+          }
         }
       }
     }
