@@ -6,25 +6,19 @@ import SwiftUI
 // https://github.com/pointfreeco/episode-code-samples/blob/main/0146-derived-behavior-pt1/
 
 class AppViewModel: ObservableObject {
-  @Republished var counter: CounterViewModel
-  @Republished var profile: ProfileViewModel
+  @Republished var counter: CounterViewModel = .init()
+  @Republished var profile: ProfileViewModel = .init()
   var cancellables: Set<AnyCancellable> = []
 
-  init(
-    counter: CounterViewModel = .init(),
-    profile: ProfileViewModel = .init()
-  ) {
-    self.counter = counter
-    self.profile = profile
-
+  init() {
     synchronize(&self.counter.$favorites, &self.profile.$favorites)
       .store(in: &self.cancellables)
   }
 }
 
 struct ContentView: View {
-  @ScopedEnvironmentObject(\AppViewModel.counter, value: \.count) var count
-  @ScopedEnvironmentObject(\AppViewModel.profile, value: \.favorites) var favorites
+  @ScopedState(\AppViewModel.counter.count) var count
+  @ScopedState(\AppViewModel.profile.favorites) var favorites
   var body: some View {
     let _ = Self._printChanges()
     TabView {
@@ -43,7 +37,7 @@ class CounterViewModel: ObservableObject {
 }
 
 struct CounterView: View {
-  @ScopedEnvironmentObject(\AppViewModel.counter) var viewModel
+  @ScopedState(\AppViewModel.counter) var viewModel
   var body: some View {
     let _ = Self._printChanges()
     VStack {
@@ -71,7 +65,7 @@ class ProfileViewModel: ObservableObject {
 }
 
 struct ProfileView: View {
-  @ScopedEnvironmentObject(\AppViewModel.profile) var viewModel
+  @ScopedState(\AppViewModel.profile) var viewModel
 
   var body: some View {
     let _ = Self._printChanges()

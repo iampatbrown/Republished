@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		233F7C3A275F155200DFD0A9 /* Dependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233F7C39275F155200DFD0A9 /* Dependencies.swift */; };
+		233F7C3D275F1C1500DFD0A9 /* CombineSchedulers in Frameworks */ = {isa = PBXBuildFile; productRef = 233F7C3C275F1C1500DFD0A9 /* CombineSchedulers */; };
+		233F7C3F275F1C8B00DFD0A9 /* CombineSchedulers in Frameworks */ = {isa = PBXBuildFile; productRef = 233F7C3E275F1C8B00DFD0A9 /* CombineSchedulers */; };
+		23A7627E275D542200C01F3C /* DerivedBehavior2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A7627D275D542200C01F3C /* DerivedBehavior2App.swift */; };
+		23A76280275D542200C01F3C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A7627F275D542200C01F3C /* ContentView.swift */; };
+		23A76282275D542300C01F3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A76281275D542300C01F3C /* Assets.xcassets */; };
+		23A76285275D542300C01F3C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A76284275D542300C01F3C /* Preview Assets.xcassets */; };
+		23A7628A275D545000C01F3C /* FactClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A76289275D545000C01F3C /* FactClient.swift */; };
+		23A7628C275D55C600C01F3C /* Republished in Frameworks */ = {isa = PBXBuildFile; productRef = 23A7628B275D55C600C01F3C /* Republished */; };
 		23AEA8F0275CB953000A21F0 /* DerivedBehaviorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEA8EF275CB953000A21F0 /* DerivedBehaviorApp.swift */; };
 		23AEA8F2275CB953000A21F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEA8F1275CB953000A21F0 /* ContentView.swift */; };
 		23AEA8F4275CB955000A21F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23AEA8F3275CB955000A21F0 /* Assets.xcassets */; };
@@ -15,6 +24,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		233F7C39275F155200DFD0A9 /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
+		233F7C40275F293400DFD0A9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		23A7627B275D542200C01F3C /* DerivedBehavior2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DerivedBehavior2.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		23A7627D275D542200C01F3C /* DerivedBehavior2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedBehavior2App.swift; sourceTree = "<group>"; };
+		23A7627F275D542200C01F3C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		23A76281275D542300C01F3C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		23A76284275D542300C01F3C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		23A76289275D545000C01F3C /* FactClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactClient.swift; sourceTree = "<group>"; };
 		23AEA8ED275CB953000A21F0 /* DerivedBehavior.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DerivedBehavior.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		23AEA8EF275CB953000A21F0 /* DerivedBehaviorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedBehaviorApp.swift; sourceTree = "<group>"; };
 		23AEA8F1275CB953000A21F0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -23,10 +40,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		23A76278275D542200C01F3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				233F7C3F275F1C8B00DFD0A9 /* CombineSchedulers in Frameworks */,
+				23A7628C275D55C600C01F3C /* Republished in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		23AEA8EA275CB953000A21F0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				233F7C3D275F1C1500DFD0A9 /* CombineSchedulers in Frameworks */,
 				23AEA8FD275CB9CC000A21F0 /* Republished in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -34,10 +61,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		23A7627C275D542200C01F3C /* DerivedBehavior2 */ = {
+			isa = PBXGroup;
+			children = (
+				233F7C40275F293400DFD0A9 /* Info.plist */,
+				23A7627D275D542200C01F3C /* DerivedBehavior2App.swift */,
+				23A7627F275D542200C01F3C /* ContentView.swift */,
+				23A76281275D542300C01F3C /* Assets.xcassets */,
+				23A76283275D542300C01F3C /* Preview Content */,
+				23A76289275D545000C01F3C /* FactClient.swift */,
+				233F7C39275F155200DFD0A9 /* Dependencies.swift */,
+			);
+			path = DerivedBehavior2;
+			sourceTree = "<group>";
+		};
+		23A76283275D542300C01F3C /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				23A76284275D542300C01F3C /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
 		23AEA8CF275CB8B9000A21F0 = {
 			isa = PBXGroup;
 			children = (
 				23AEA8EE275CB953000A21F0 /* DerivedBehavior */,
+				23A7627C275D542200C01F3C /* DerivedBehavior2 */,
 				23AEA8D9275CB8B9000A21F0 /* Products */,
 				23AEA8FB275CB9CC000A21F0 /* Frameworks */,
 			);
@@ -47,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				23AEA8ED275CB953000A21F0 /* DerivedBehavior.app */,
+				23A7627B275D542200C01F3C /* DerivedBehavior2.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,6 +131,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		23A7627A275D542200C01F3C /* DerivedBehavior2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 23A76288275D542300C01F3C /* Build configuration list for PBXNativeTarget "DerivedBehavior2" */;
+			buildPhases = (
+				23A76277275D542200C01F3C /* Sources */,
+				23A76278275D542200C01F3C /* Frameworks */,
+				23A76279275D542200C01F3C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DerivedBehavior2;
+			packageProductDependencies = (
+				23A7628B275D55C600C01F3C /* Republished */,
+				233F7C3E275F1C8B00DFD0A9 /* CombineSchedulers */,
+			);
+			productName = DerivedBehavior2;
+			productReference = 23A7627B275D542200C01F3C /* DerivedBehavior2.app */;
+			productType = "com.apple.product-type.application";
+		};
 		23AEA8EC275CB953000A21F0 /* DerivedBehavior */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 23AEA8F8275CB955000A21F0 /* Build configuration list for PBXNativeTarget "DerivedBehavior" */;
@@ -95,6 +167,7 @@
 			name = DerivedBehavior;
 			packageProductDependencies = (
 				23AEA8FC275CB9CC000A21F0 /* Republished */,
+				233F7C3C275F1C1500DFD0A9 /* CombineSchedulers */,
 			);
 			productName = DerivedBehavior;
 			productReference = 23AEA8ED275CB953000A21F0 /* DerivedBehavior.app */;
@@ -110,6 +183,9 @@
 				LastSwiftUpdateCheck = 1310;
 				LastUpgradeCheck = 1310;
 				TargetAttributes = {
+					23A7627A275D542200C01F3C = {
+						CreatedOnToolsVersion = 13.1;
+					};
 					23AEA8EC275CB953000A21F0 = {
 						CreatedOnToolsVersion = 13.1;
 					};
@@ -124,16 +200,29 @@
 				Base,
 			);
 			mainGroup = 23AEA8CF275CB8B9000A21F0;
+			packageReferences = (
+				233F7C3B275F1C1500DFD0A9 /* XCRemoteSwiftPackageReference "combine-schedulers" */,
+			);
 			productRefGroup = 23AEA8D9275CB8B9000A21F0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				23AEA8EC275CB953000A21F0 /* DerivedBehavior */,
+				23A7627A275D542200C01F3C /* DerivedBehavior2 */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		23A76279275D542200C01F3C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				23A76285275D542300C01F3C /* Preview Assets.xcassets in Resources */,
+				23A76282275D542300C01F3C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		23AEA8EB275CB953000A21F0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -146,6 +235,17 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		23A76277275D542200C01F3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				233F7C3A275F155200DFD0A9 /* Dependencies.swift in Sources */,
+				23A7628A275D545000C01F3C /* FactClient.swift in Sources */,
+				23A76280275D542200C01F3C /* ContentView.swift in Sources */,
+				23A7627E275D542200C01F3C /* DerivedBehavior2App.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		23AEA8E9275CB953000A21F0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -158,6 +258,66 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		23A76286275D542300C01F3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DerivedBehavior2/Preview Content\"";
+				DEVELOPMENT_TEAM = G7SC3UG6VB;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DerivedBehavior2/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.patbrown.DerivedBehavior2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		23A76287275D542300C01F3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"DerivedBehavior2/Preview Content\"";
+				DEVELOPMENT_TEAM = G7SC3UG6VB;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DerivedBehavior2/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.patbrown.DerivedBehavior2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		23AEA8E4275CB8BB000A21F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -335,6 +495,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		23A76288275D542300C01F3C /* Build configuration list for PBXNativeTarget "DerivedBehavior2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23A76286275D542300C01F3C /* Debug */,
+				23A76287275D542300C01F3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		23AEA8D3275CB8B9000A21F0 /* Build configuration list for PBXProject "Examples" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -355,7 +524,32 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		233F7C3B275F1C1500DFD0A9 /* XCRemoteSwiftPackageReference "combine-schedulers" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/combine-schedulers.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		233F7C3C275F1C1500DFD0A9 /* CombineSchedulers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 233F7C3B275F1C1500DFD0A9 /* XCRemoteSwiftPackageReference "combine-schedulers" */;
+			productName = CombineSchedulers;
+		};
+		233F7C3E275F1C8B00DFD0A9 /* CombineSchedulers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 233F7C3B275F1C1500DFD0A9 /* XCRemoteSwiftPackageReference "combine-schedulers" */;
+			productName = CombineSchedulers;
+		};
+		23A7628B275D55C600C01F3C /* Republished */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Republished;
+		};
 		23AEA8FC275CB9CC000A21F0 /* Republished */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Republished;
