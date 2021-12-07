@@ -210,6 +210,10 @@ class AppViewModel: ObservableObject {
     self.counters.reduce(0) { $0 + $1.counter.count }
   }
 
+  func f() -> Int {
+    1
+  }
+
   func addButtonTapped() {
     let counterViewModel = CounterViewModel(
       onFact: { [weak self] count, fact in
@@ -250,7 +254,8 @@ struct AppView: View {
   @Scoped(\AppViewModel.sum) var sum
   @Scoped(\AppViewModel.counters) var counters
   @Scoped(\AppViewModel.factPrompt) var factPrompt
-  @UnobservedEnvironmentObject var viewModel: AppViewModel
+  @Action(AppViewModel.addButtonTapped) var addButtonTapped
+  @Action(AppViewModel.dismissFactPrompt) var dismissFactPrompt
 
   var body: some View {
     Self._printChanges()
@@ -264,7 +269,7 @@ struct AppView: View {
       .navigationBarItems(
         trailing: Button("Add") {
           withAnimation {
-            self.viewModel.addButtonTapped()
+            self.addButtonTapped()
           }
         }
       )
@@ -273,7 +278,7 @@ struct AppView: View {
         FactPrompt(
           viewModel: factPrompt,
           onDismissTapped: {
-            self.viewModel.dismissFactPrompt()
+            self.dismissFactPrompt()
           }
         )
       }
@@ -288,3 +293,7 @@ struct _Previews: PreviewProvider {
     }
   }
 }
+
+let action = AppViewModel.addButtonTapped
+
+let action2 = AppViewModel.f
