@@ -2,28 +2,41 @@ import Combine
 @testable import Republished
 import XCTest
 
-private enum BlobKey: DependencyKey {
-  static let defaultValue = "Blob"
-  static let testValue = "TestBlob"
-  static let previewValue = "PreviewBlob"
+enum Foo {
+  case `default`
+  case test
+  case preview
+  case wrapper
+  case closure
+}
+
+private enum FooKey: DependencyKey {
+  static let defaultValue = Foo.default
+  static let testValue = Foo.test
+  static let previewValue = Foo.preview
 }
 
 extension Dependencies {
-  var blob: String {
-    get { self[BlobKey.self] }
-    set { self[BlobKey.self] = newValue }
+  var foo: Foo {
+    get { self[FooKey.self] }
+    set { self[FooKey.self] = newValue }
   }
 }
 
+extension Dependencies {
+  static var fooWrapper: Self { Self { $0.foo = .wrapper } }
+  static var fooClosure: Self { Self { $0.foo = .closure } }
+}
+
 private class Parent: ObservableObject {
-  @Dependency(\.blob) var blob
+  @Dependency(\.foo) var foo
   let notRepublished = Child()
   @Republished var withInheritance = Child()
   @Republished(inheritDependencies: false) var withoutInheritance = Child()
 }
 
 private class Child: ObservableObject {
-  @Dependency(\.blob) var blob
+  @Dependency(\.foo) var foo
 }
 
 final class WithDependenciesTests: XCTestCase {
@@ -32,53 +45,53 @@ final class WithDependenciesTests: XCTestCase {
   func testBasic() throws {
     let parent = Parent()
 
-    XCTAssertEqual(parent.blob, BlobKey.testValue)
+    XCTAssertEqual(parent.foo, .test)
 
-    withDependencies(Dependencies { $0.blob = "withBlob" }) {
-      XCTAssertEqual(parent.blob, "withBlob")
+    withDependencies(.fooClosure) {
+      XCTAssertEqual(parent.foo, .closure)
     }
 
-    XCTAssertEqual(parent.blob, BlobKey.testValue)
+    XCTAssertEqual(parent.foo, .test)
   }
 
   func testChildren() throws {
     let parent = Parent()
 
-    XCTAssertEqual(parent.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.notRepublished.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.withInheritance.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.withoutInheritance.blob, BlobKey.testValue)
+    XCTAssertEqual(parent.foo, .test)
+    XCTAssertEqual(parent.notRepublished.foo, .test)
+    XCTAssertEqual(parent.withInheritance.foo, .test)
+    XCTAssertEqual(parent.withoutInheritance.foo, .test)
 
-    withDependencies(Dependencies { $0.blob = "withBlob" }) {
-      XCTAssertEqual(parent.blob, "withBlob")
-      XCTAssertEqual(parent.notRepublished.blob, "withBlob")
-      XCTAssertEqual(parent.withInheritance.blob, "withBlob")
-      XCTAssertEqual(parent.withoutInheritance.blob, "withBlob")
+    withDependencies(.fooClosure) {
+      XCTAssertEqual(parent.foo, .closure)
+      XCTAssertEqual(parent.notRepublished.foo, .closure)
+      XCTAssertEqual(parent.withInheritance.foo, .closure)
+      XCTAssertEqual(parent.withoutInheritance.foo, .closure)
     }
 
-    XCTAssertEqual(parent.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.notRepublished.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.withInheritance.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.withoutInheritance.blob, BlobKey.testValue)
+    XCTAssertEqual(parent.foo, .test)
+    XCTAssertEqual(parent.notRepublished.foo, .test)
+    XCTAssertEqual(parent.withInheritance.foo, .test)
+    XCTAssertEqual(parent.withoutInheritance.foo, .test)
   }
 
   func testWithDependenciesWrapper() {
-    @WithDependencies(Dependencies { $0.blob = "ParentBlob" }) var parent = Parent()
-    XCTAssertEqual(parent.blob, "ParentBlob")
-    XCTAssertEqual(parent.notRepublished.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.withInheritance.blob, "ParentBlob")
-    XCTAssertEqual(parent.withoutInheritance.blob, BlobKey.testValue)
+    @WithDependencies(.fooWrapper) var parent = Parent()
+    XCTAssertEqual(parent.foo, .wrapper)
+    XCTAssertEqual(parent.notRepublished.foo, .test)
+    XCTAssertEqual(parent.withInheritance.foo, .wrapper)
+    XCTAssertEqual(parent.withoutInheritance.foo, .test)
 
-    withDependencies(Dependencies { $0.blob = "withBlob" }) {
-      XCTAssertEqual(parent.blob, "withBlob")
-      XCTAssertEqual(parent.notRepublished.blob, "withBlob")
-      XCTAssertEqual(parent.withInheritance.blob, "withBlob")
-      XCTAssertEqual(parent.withoutInheritance.blob, "withBlob")
+    withDependencies(.fooClosure) {
+      XCTAssertEqual(parent.foo, .closure)
+      XCTAssertEqual(parent.notRepublished.foo, .closure)
+      XCTAssertEqual(parent.withInheritance.foo, .closure)
+      XCTAssertEqual(parent.withoutInheritance.foo, .closure)
     }
 
-    XCTAssertEqual(parent.blob, "ParentBlob")
-    XCTAssertEqual(parent.notRepublished.blob, BlobKey.testValue)
-    XCTAssertEqual(parent.withInheritance.blob, "ParentBlob")
-    XCTAssertEqual(parent.withoutInheritance.blob, BlobKey.testValue)
+    XCTAssertEqual(parent.foo, .wrapper)
+    XCTAssertEqual(parent.notRepublished.foo, .test)
+    XCTAssertEqual(parent.withInheritance.foo, .wrapper)
+    XCTAssertEqual(parent.withoutInheritance.foo, .test)
   }
 }

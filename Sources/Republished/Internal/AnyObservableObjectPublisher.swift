@@ -14,10 +14,12 @@ extension Box: AnyObservableObjectPublisher where T: ObservableObject,
   }
 }
 
-@usableFromInline
-func observableObjectPublisher(for object: Any) -> ObservableObjectPublisher? {
-  func open<T>(_: T.Type) -> ObservableObjectPublisher? {
-    (Box<T>.self as? AnyObservableObjectPublisher.Type)?.observableObjectPublisher(for: object)
+extension ObservableObjectPublisher {
+  @usableFromInline
+  static func extract(from object: Any) -> ObservableObjectPublisher? {
+    func open<T>(_: T.Type) -> ObservableObjectPublisher? {
+      (Box<T>.self as? AnyObservableObjectPublisher.Type)?.observableObjectPublisher(for: object)
+    }
+    return _openExistential(type(of: object), do: open)
   }
-  return _openExistential(type(of: object), do: open)
 }

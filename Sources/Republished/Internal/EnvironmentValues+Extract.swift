@@ -6,7 +6,7 @@ extension EnvironmentValues: Sequence {
 
     init(_ environment: EnvironmentValues) {
       let mirror = Mirror(reflecting: environment)
-      self.current = mirror.descendant("_plist", "elements", "some")
+      self.current = mirror.descendant("_plist", "elements", "some") ?? mirror.descendant("plist", "elements", "some")
     }
 
     public mutating func next() -> Any? {
@@ -24,10 +24,8 @@ extension EnvironmentValues: Sequence {
 
 extension EnvironmentValues {
   func extract<T>(key: String, as type: T.Type) -> T? {
-    guard let value = first(where: { environmentKey(for: $0) == key }) else { return nil }
-    let mirror = Mirror(reflecting: value)
-    guard let extracted = mirror.descendant("value", "some") as? T else { return nil }
-    return extracted
+    self.first(where: { self.environmentKey(for: $0) == key })
+      .flatMap { Mirror(reflecting: $0).descendant("value") as? T }
   }
 
   func environmentKey(for value: Any) -> String? {

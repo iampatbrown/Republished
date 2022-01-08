@@ -33,6 +33,8 @@ public struct Action<ObjectType, Value>: DynamicProperty
   }
 
   public var wrappedValue: Value {
-    action(self.root)
+    self.action(self.root)
   }
 }
+
+

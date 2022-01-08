@@ -38,7 +38,7 @@ public struct Republished<Value> {
 
   func republish<EnclosingSelf: AnyObject>(to object: EnclosingSelf) {
     guard self.subject.changePublisher == nil else { return }
-    self.subject.changePublisher = observableObjectPublisher(for: object) ?? ObservableObjectPublisher()
+    self.subject.changePublisher = ObservableObjectPublisher.extract(from: object) ?? ObservableObjectPublisher()
   }
 
   public static subscript<EnclosingSelf: AnyObject>(
@@ -99,6 +99,7 @@ public struct Republished<Value> {
     }
   }
 }
+
 
 extension ObservableObject {
   func republish(to subject: Republished<Self>.Subject, inheritDependencies: Bool) {

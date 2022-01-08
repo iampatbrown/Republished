@@ -2,27 +2,14 @@ import Combine
 import Foundation
 import SwiftUI
 
-public protocol DependencyKey {
-  associatedtype Value
-  static var defaultValue: Value { get }
-  static var testValue: Value { get }
-  static var previewValue: Value { get }
-}
-
-extension DependencyKey {
-  public static var testValue: Value { Self.defaultValue }
-  public static var previewValue: Value { Self.defaultValue }
-
-  fileprivate static var defaultValueForEnvironment: Value {
-    if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return Self.testValue }
-    else if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" { return Self.previewValue }
-    return Self.defaultValue
-  }
-}
-
 public struct Dependencies {
-  fileprivate var storage: [[ObjectIdentifier: Any]] = [[:]]
-  private var isRunningWithDependenciesBody: Bool { self.storage.count > 1 }
+  private var storage: [[ObjectIdentifier: Any]] = [[:]]
+  private var values: [ObjectIdentifier: Any] {
+    _read { yield self.storage[self.storage.endIndex - 1] }
+    _modify { yield &self.storage[self.storage.endIndex - 1] }
+  }
+
+  var hasMergedValues: Bool { self.storage.count > 1 }
 
   public init() {}
 
@@ -31,31 +18,43 @@ public struct Dependencies {
   }
 
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
-    get {
-      let id = ObjectIdentifier(key)
-      guard let value = self.storage.last?[id] as? Key.Value
-      else { return Key.defaultValueForEnvironment }
-      return value
-    }
-    set {
-      self.storage[self.storage.count - 1][ObjectIdentifier(key)] = newValue
-    }
+    get { self.values[ObjectIdentifier(key)] as? Key.Value ?? self.defaultValue(key: key) }
+    set { self.values[ObjectIdentifier(key)] = newValue }
+  }
+
+  private func defaultValue<Key: DependencyKey>(key: Key.Type) -> Key.Value {
+    if ProcessInfo.isRunningUnitTests { return key.testValue }
+    else if ProcessInfo.isRunningPreviews { return key.previewValue }
+    return key.defaultValue
+  }
+
+  mutating func push(_ dependencies: Dependencies) {
+    self.storage.append(self.values)
+    self.values.merge(dependencies.values) { $1 }
+  }
+
+  mutating func popLast() {
+    self.storage.removeLast()
+    if self.storage.isEmpty { self.storage.append([:]) }
   }
 
   @ThreadSafe static var shared = Dependencies()
 }
 
 extension Dependencies {
+  @ThreadSafe private static var store: [ObjectIdentifier: Dependencies] = [:]
+  @ThreadSafe private static var inheritanceRelationships: [ObjectIdentifier: () -> ObjectIdentifier?] = [:]
+
+  private static let lock = NSRecursiveLock()
+
   static func bind<ObjectType: AnyObject>(
     _ dependencies: Dependencies,
     to object: ObjectType
   ) -> AnyCancellable {
-    dependenciesLock.lock()
-    defer { dependenciesLock.unlock() }
     let id = Dependencies.id(for: object)
-    dependenciesStore[id] = dependencies
+    Self.store[id] = dependencies
     return AnyCancellable {
-      dependenciesLock.sync { dependenciesStore[id] = nil }
+      Self.store[id] = nil
     }
   }
 
@@ -63,29 +62,28 @@ extension Dependencies {
     _ object: ObjectType,
     parentId: @escaping () -> ObjectIdentifier?
   ) -> AnyCancellable {
-    dependenciesLock.lock()
-    defer { dependenciesLock.unlock() }
     let id = Dependencies.id(for: object)
-    inheritanceRelationships[id] = parentId
+    Self.inheritanceRelationships[id] = parentId
     return AnyCancellable {
-      dependenciesLock.sync { inheritanceRelationships[id] = nil }
+      Self.inheritanceRelationships[id] = nil
     }
   }
 
-  static func parentDependencies(for id: ObjectIdentifier) -> Dependencies? {
-    guard var rootId = inheritanceRelationships[id]?() else { return nil }
-    while let parentId = inheritanceRelationships[rootId]?() { rootId = parentId }
-    return dependenciesStore[rootId]
+  static func inheritedDependencies(for id: ObjectIdentifier) -> Dependencies? {
+    // TODO: Clean up with Token
+    guard var rootId = Self.inheritanceRelationships[id]?() else { return nil }
+    while let parentId = Self.inheritanceRelationships[rootId]?() {
+      rootId = parentId
+    }
+    return Self.store[rootId]
   }
 
   static func `for`<ObjectType: AnyObject>(_ object: ObjectType) -> Dependencies {
     let id = Dependencies.id(for: object)
 
-    if var dependencies = parentDependencies(for: id) ?? dependenciesStore[id] {
-      if Dependencies.shared.isRunningWithDependenciesBody {
-        for (id, value) in Dependencies.shared.storage.last! {
-          dependencies.storage[dependencies.storage.count - 1][id] = value
-        }
+    if var dependencies = inheritedDependencies(for: id) ?? store[id] {
+      if Dependencies.shared.hasMergedValues {
+        dependencies.push(Dependencies.shared)
       }
       return dependencies
     } else {
@@ -94,19 +92,6 @@ extension Dependencies {
   }
 
   static func id<ObjectType: AnyObject>(for object: ObjectType) -> ObjectIdentifier {
-    observableObjectPublisher(for: object).map(ObjectIdentifier.init) ?? ObjectIdentifier(object)
+    ObservableObjectPublisher.extract(from: object).map(ObjectIdentifier.init) ?? ObjectIdentifier(object)
   }
 }
-
-public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () -> Result) -> Result {
-  Dependencies.shared.storage.append(Dependencies.shared.storage.last!)
-  for (id, value) in dependencies.storage.last! {
-    Dependencies.shared.storage[Dependencies.shared.storage.count - 1][id] = value
-  }
-  defer { Dependencies.shared.storage.removeLast() }
-  return body()
-}
-
-var dependenciesStore: [ObjectIdentifier: Dependencies] = [:]
-var inheritanceRelationships: [ObjectIdentifier: () -> ObjectIdentifier?] = [:]
-let dependenciesLock = NSRecursiveLock()

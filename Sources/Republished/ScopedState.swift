@@ -34,7 +34,7 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
     weak var root: ObjectType?
     let keyPath: ReferenceWritableKeyPath<ObjectType, Value>
     var cancellable: AnyCancellable?
-    var isSending: Bool = false
+    var isSending = false
 
     @Published var currentValue: Value?
 
@@ -57,7 +57,7 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
     func update(root: ObjectType) {
       guard self.root.map({ $0 !== root }) ?? true else { return }
       self.root = root
-      if let changePublisher = observableObjectPublisher(for: root[keyPath: self.keyPath]) {
+      if let changePublisher = ObservableObjectPublisher.extract(from: root[keyPath: self.keyPath]) {
         self.cancellable = changePublisher.sink { [weak self] in self?.objectWillChange.send() }
       } else {
         self.cancellable = root.objectWillChange.sink { [weak self, weak root] _ in

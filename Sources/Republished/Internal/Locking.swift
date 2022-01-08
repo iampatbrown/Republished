@@ -19,7 +19,7 @@ class ThreadSafe<Value> {
   }
 
   public var wrappedValue: Value {
-    get { return lock.sync { return value } }
-    set { lock.sync { value = newValue } }
+    get { return self.lock.sync { return self.value } }
+    set { self.lock.sync { self.value = newValue } }
   }
 }

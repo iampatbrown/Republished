@@ -1,10 +1,15 @@
 import Combine
 import SwiftUI
 
+public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () -> Result) -> Result {
+  Dependencies.shared.push(dependencies)
+  defer { Dependencies.shared.popLast() }
+  return body()
+}
+
 @propertyWrapper
 public struct WithDependencies<ObjectType: AnyObject>: DynamicProperty {
-  @State
-  var storage: Storage
+  @State var storage: Storage
 
   public init(wrappedValue thunk: @autoclosure @escaping () -> ObjectType, _ dependencies: Dependencies) {
     self._storage = State(wrappedValue: Storage(state: .initially(thunk, dependencies)))
