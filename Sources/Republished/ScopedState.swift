@@ -5,73 +5,31 @@ import SwiftUI
 public struct ScopedState<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject
 {
-  @UnobservedEnvironmentObject var root: ObjectType
-  @StateObject var state: State
+  @UnobservedEnvironmentObject var object: ObjectType
+  @StateObject var scoped: ScopedObject<ObjectType, Value>
 
   public init(
     _ keyPath: ReferenceWritableKeyPath<ObjectType, Value>
   ) {
-    self._state = .init(wrappedValue: State(keyPath))
+    self._scoped = .init(wrappedValue: .init(keyPath))
   }
 
   public var wrappedValue: Value {
-    get { self.state.value ?? self.root[keyPath: self.state.keyPath] }
-    nonmutating set { self.root[keyPath: self.state.keyPath] = newValue }
+    get { self.scoped.value ?? self.object[keyPath: self.scoped.keyPath] }
+    nonmutating set {
+      guard let keyPath = self.scoped.keyPath as? ReferenceWritableKeyPath<ObjectType, Value> else { return }
+      self.object[keyPath: keyPath] = newValue
+    }
   }
 
   public var projectedValue: Binding<Value> {
     Binding(
       get: { self.wrappedValue },
-      set: { self.$state.value.transaction($1).wrappedValue = $0 }
+      set: { self.$scoped.value.transaction($1).wrappedValue = $0 }
     )
   }
 
   public func update() {
-    self.state.update(root: self.root)
-  }
-
-  class State: ObservableObject {
-    weak var root: ObjectType?
-    let keyPath: ReferenceWritableKeyPath<ObjectType, Value>
-    var cancellable: AnyCancellable?
-    var isSending = false
-
-    @Published var currentValue: Value?
-
-    init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>) {
-      self.keyPath = keyPath
-    }
-
-    var value: Value? {
-      get { self.currentValue ?? self.root?[keyPath: self.keyPath] }
-      set { newValue.map(self.send) }
-    }
-
-    func send(_ value: Value) {
-      self.isSending = true
-      self.currentValue = value
-      self.root?[keyPath: self.keyPath] = value
-      self.isSending = false
-    }
-
-    func update(root: ObjectType) {
-      guard self.root.map({ $0 !== root }) ?? true else { return }
-      self.root = root
-      if let changePublisher = ObservableObjectPublisher.extract(from: root[keyPath: self.keyPath]) {
-        self.cancellable = changePublisher.sink { [weak self] in self?.objectWillChange.send() }
-      } else {
-        self.cancellable = root.objectWillChange.sink { [weak self, weak root] _ in
-          guard let initialValue = self?.value else { return }
-          DispatchQueue.main.async { [weak self, weak root] in
-            guard
-              let self = self,
-              !self.isSending,
-              let newValue = root?[keyPath: self.keyPath],
-              !isEqual(initialValue, newValue) else { return }
-            self.currentValue = newValue
-          }
-        }
-      }
-    }
+    self.scoped.object = self.object
   }
 }

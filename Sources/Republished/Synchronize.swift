@@ -5,7 +5,7 @@ class SynchronizingRelay<Value> {
   var currentSender: CombineIdentifier?
 
   func send(_ value: Value) {
-    subject.send(value)
+    self.subject.send(value)
   }
 
   func synchronize(with publisher: inout Published<Value>.Publisher) -> AnyCancellable {
@@ -28,11 +28,7 @@ public func synchronize<Value>(
   let c0 = relay.synchronize(with: &p0)
   let c1 = relay.synchronize(with: &p1)
 
-  return AnyCancellable {
-    _ = relay
-    _ = c0
-    _ = c1
-  }
+  return AnyCancellable { _ = (relay, c0, c1) }
 }
 
 public func synchronize<Value>(
@@ -45,12 +41,7 @@ public func synchronize<Value>(
   let c1 = relay.synchronize(with: &p1)
   let c2 = relay.synchronize(with: &p2)
 
-  return AnyCancellable {
-    _ = relay
-    _ = c0
-    _ = c1
-    _ = c2
-  }
+  return AnyCancellable { _ = (relay, c0, c1, c2) }
 }
 
 public func synchronize<Value>(
@@ -65,13 +56,7 @@ public func synchronize<Value>(
   let c2 = relay.synchronize(with: &p2)
   let c3 = relay.synchronize(with: &p3)
 
-  return AnyCancellable {
-    _ = relay
-    _ = c0
-    _ = c1
-    _ = c2
-    _ = c3
-  }
+  return AnyCancellable { _ = (relay, c0, c1, c2, c3) }
 }
 
 public func synchronize<Value>(
@@ -88,12 +73,5 @@ public func synchronize<Value>(
   let c3 = relay.synchronize(with: &p3)
   let c4 = relay.synchronize(with: &p4)
 
-  return AnyCancellable {
-    _ = relay
-    _ = c0
-    _ = c1
-    _ = c2
-    _ = c3
-    _ = c4
-  }
+  return AnyCancellable { _ = (relay, c0, c1, c2, c3, c4) }
 }

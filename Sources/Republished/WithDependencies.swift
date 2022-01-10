@@ -16,11 +16,11 @@ public struct WithDependencies<ObjectType: AnyObject>: DynamicProperty {
   }
 
   public var wrappedValue: ObjectType {
-    switch storage.state {
+    switch self.storage.state {
     case let .initially(thunk, dependencies):
       let object = withDependencies(dependencies, thunk)
-      storage.state = .object(object)
-      storage.cancellable = Dependencies.bind(dependencies, to: object)
+      self.storage.state = .object(object)
+      self.storage.cancellable = Dependencies.bind(dependencies, to: object)
       return object
     case let .object(object):
       return object
