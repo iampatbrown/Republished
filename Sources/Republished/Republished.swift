@@ -9,21 +9,21 @@ public struct Republished<Value> {
     wrappedValue: Value,
     inheritDependencies: Bool = true
   ) where Value: ObservableObject {
-    self.subject = .init(wrappedValue) { $0.republish(to: $1, inheritDependencies: inheritDependencies) }
+    self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
   }
 
   public init<Wrapped>(
     wrappedValue: Wrapped?,
     inheritDependencies: Bool = true
   ) where Wrapped? == Value, Wrapped: ObservableObject {
-    self.subject = .init(wrappedValue) { $0?.republish(to: $1, inheritDependencies: inheritDependencies) }
+    self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
   }
 
   public init(
     wrappedValue: Value,
     inheritDependencies: Bool = true
   ) where Value: Collection, Value.Element: ObservableObject {
-    self.subject = .init(wrappedValue) { $0.republish(to: $1, inheritDependencies: inheritDependencies) }
+    self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
   }
 
   @available(*, unavailable, message: "@Republished is only available on properties of classes")
@@ -77,68 +77,71 @@ public struct Republished<Value> {
 
     var cancellable: AnyCancellable?
     weak var changePublisher: ObservableObjectPublisher?
-    var republishChanges: (Value, Subject) -> Void
+//    var republishChanges: (Subject, Value) -> Void
+
+    var republish: ((Value) -> Void)?
 
     @Published var currentValue: Value {
       willSet { self.changePublisher?.send() }
-      didSet { self.republishChanges(for: currentValue) }
+      didSet { self.republish(self.currentValue) }
     }
 
-    init(_ initialValue: Value, republishChanges: @escaping (Value, Subject) -> Void) {
+    init(_ initialValue: Value, inheritDependencies: Bool) where Value: ObservableObject {
       self._currentValue = .init(wrappedValue: initialValue)
-      self.republishChanges = republishChanges
-      self.republishChanges(for: initialValue)
+      self.republish = { [weak self] object in
+        guard let self = self else { return }
+        self.cancellable = nil
+        let changeCancellable = object.subscribe(self)
+        let dependencyCancellable = inheritDependencies ? object.inheritDependencies(from: self) : nil
+        self.cancellable = AnyCancellable {
+          _ = (changeCancellable, dependencyCancellable)
+        }
+      }
+    }
+
+    init<Wrapped>(_ initialValue: Wrapped?, inheritDependencies: Bool) where Wrapped: ObservableObject,
+      Wrapped? == Value
+    {
+      self._currentValue = .init(wrappedValue: initialValue)
+      self.republish = { [weak self] object in
+        guard let self = self else { return }
+        self.cancellable = nil
+        let changeCancellable = object?.subscribe(self)
+        let dependencyCancellable = inheritDependencies ? object?.inheritDependencies(from: self) : nil
+        self.cancellable = AnyCancellable {
+          _ = (changeCancellable, dependencyCancellable)
+        }
+      }
+    }
+
+    init(_ initialValue: Value, inheritDependencies: Bool) where Value: Collection, Value.Element: ObservableObject {
+      self._currentValue = .init(wrappedValue: initialValue)
+      self.republish = { [weak self] objects in
+        guard let self = self else { return }
+        self.cancellable = nil
+        let changeCancellables = objects.map { $0.subscribe(self) }
+        let dependencyCancellables = inheritDependencies ? objects.map { $0.inheritDependencies(from: self) } : nil
+
+        self.cancellable = AnyCancellable {
+          _ = (changeCancellables, dependencyCancellables)
+        }
+      }
     }
 
     func receive<S>(subscriber: S) where S: Subscriber, Never == S.Failure, Output == S.Input {
       self.$currentValue.subscribe(subscriber)
     }
-
-    func republishChanges(for value: Value) {
-      self.republishChanges(value, self)
-    }
   }
 }
-
 
 extension ObservableObject {
-  func republish(to subject: Republished<Self>.Subject, inheritDependencies: Bool) {
-    subject.cancellable = nil
-    let changeCancellable = self.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() }
-    let dependencyCancellable = inheritDependencies ? Dependencies.bindInheritance(self) {
-      [weak subject] in subject?.changePublisher.flatMap(Dependencies.id)
-    } : nil
-    subject.cancellable = AnyCancellable {
-      _ = changeCancellable
-      _ = dependencyCancellable
-    }
+  func subscribe<Value>(_ subject: Republished<Value>.Subject) -> AnyCancellable {
+    self.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() }
   }
 
-  func republish(to subject: Republished<Self?>.Subject, inheritDependencies: Bool) {
-    subject.cancellable = nil
-    let changeCancellable = self.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() }
-    let dependencyCancellable = inheritDependencies ? Dependencies.bindInheritance(self) {
+  func inheritDependencies<Value>(from subject: Republished<Value>.Subject) -> AnyCancellable {
+    Dependencies.bindInheritance(self) {
       [weak subject] in subject?.changePublisher.flatMap(Dependencies.id)
-    } : nil
-    subject.cancellable = AnyCancellable {
-      _ = changeCancellable
-      _ = dependencyCancellable
-    }
-  }
-}
-
-extension Collection where Element: ObservableObject {
-  func republish(to subject: Republished<Self>.Subject, inheritDependencies: Bool) {
-    subject.cancellable = nil
-    let changeCancellables = self.map {
-      $0.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() }
-    }
-    let dependencyCancellables = inheritDependencies ? self.map {
-      Dependencies.bindInheritance($0) { [weak subject] in subject?.changePublisher.flatMap(Dependencies.id) }
-    } : nil
-    subject.cancellable = AnyCancellable {
-      _ = changeCancellables
-      _ = dependencyCancellables
     }
   }
 }

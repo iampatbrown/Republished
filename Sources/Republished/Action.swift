@@ -8,33 +8,43 @@ public struct Action<ObjectType, Value>: DynamicProperty
   @UnobservedEnvironmentObject var root: ObjectType
   let action: (ObjectType) -> Value
 
+  public var wrappedValue: Value {
+    self.action(self.root)
+  }
+
+  public init<Output>(
+    _ action: @escaping (ObjectType) -> () -> Output
+  ) where Value == () -> Output {
+    self.action = action
+  }
+
   public init<Input, Output>(
     _ action: @escaping (ObjectType) -> (Input) -> Output
   ) where Value == (Input) -> Output {
     self.action = action
   }
 
-  public init<Input>(
-    _ action: @escaping (ObjectType) -> (Input) -> Void
-  ) where Value == (Input) -> Void {
+  public init<I1, I2, Output>(
+    _ action: @escaping (ObjectType) -> (I1, I2) -> Output
+  ) where Value == (I1, I2) -> Output {
     self.action = action
   }
 
-  public init<Output>(
-    _ action: @escaping (ObjectType) -> () -> (Output)
-  ) where Value == () -> (Output) {
+  public init<I1, I2, I3, Output>(
+    _ action: @escaping (ObjectType) -> (I1, I2, I3) -> Output
+  ) where Value == (I1, I2, I3) -> Output {
     self.action = action
   }
 
-  public init(
-    _ action: @escaping (ObjectType) -> () -> Void
-  ) where Value == () -> Void {
+  public init<I1, I2, I3, I4, Output>(
+    _ action: @escaping (ObjectType) -> (I1, I2, I3, I4) -> Output
+  ) where Value == (I1, I2, I3, I4) -> Output {
     self.action = action
   }
 
-  public var wrappedValue: Value {
-    self.action(self.root)
+  public init<I1, I2, I3, I4, I5, Output>(
+    _ action: @escaping (ObjectType) -> (I1, I2, I3, I4, I5) -> Output
+  ) where Value == (I1, I2, I3, I4, I5) -> Output {
+    self.action = action
   }
 }
-
-

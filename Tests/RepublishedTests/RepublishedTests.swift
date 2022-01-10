@@ -28,7 +28,7 @@ final class RepublishedTests: XCTestCase {
   func testBasic() {
     let parent = Parent()
     var oldValues: [Int] = []
-
+    
     let expectation = self.expectation(description: "ReceivedValue")
     expectation.expectedFulfillmentCount = 3
 

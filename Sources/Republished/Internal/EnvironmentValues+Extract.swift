@@ -24,7 +24,12 @@ extension EnvironmentValues: Sequence {
 
 extension EnvironmentValues {
   func extract<T>(key: String, as type: T.Type) -> T? {
-    self.first(where: { self.environmentKey(for: $0) == key })
+    #if DEBUG
+    if ProcessInfo.isRunningUnitTests, let object = EnvironmentValues.mockObjects[key] as? T {
+      return object
+    }
+    #endif
+    return self.first(where: { self.environmentKey(for: $0) == key })
       .flatMap { Mirror(reflecting: $0).descendant("value") as? T }
   }
 
@@ -36,3 +41,16 @@ extension EnvironmentValues {
     return String(typeDescription[prefix.upperBound..<suffix.lowerBound])
   }
 }
+
+#if DEBUG
+func withMockEnvironmentObjects<Result>(_ objects: AnyObject..., do body: () -> Result) -> Result {
+  let keysAndValues = objects.map { ("StoreKey<\(type(of: $0))>", $0 as Any) }
+  EnvironmentValues.mockObjects.push(keysAndValues)
+  defer { EnvironmentValues.mockObjects.popLast() }
+  return body()
+}
+
+extension EnvironmentValues {
+  @ThreadSafe fileprivate static var mockObjects = Stack<String, Any>()
+}
+#endif

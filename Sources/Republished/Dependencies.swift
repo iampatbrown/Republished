@@ -1,15 +1,10 @@
 import Combine
-import Foundation
 import SwiftUI
 
 public struct Dependencies {
-  private var storage: [[ObjectIdentifier: Any]] = [[:]]
-  private var values: [ObjectIdentifier: Any] {
-    _read { yield self.storage[self.storage.endIndex - 1] }
-    _modify { yield &self.storage[self.storage.endIndex - 1] }
-  }
+  private var stack = Stack<ObjectIdentifier, Any>()
 
-  var hasMergedValues: Bool { self.storage.count > 1 }
+  var hasPushedDependencies: Bool { self.stack.size > 1 }
 
   public init() {}
 
@@ -18,24 +13,16 @@ public struct Dependencies {
   }
 
   public subscript<Key: DependencyKey>(key: Key.Type) -> Key.Value {
-    get { self.values[ObjectIdentifier(key)] as? Key.Value ?? self.defaultValue(key: key) }
-    set { self.values[ObjectIdentifier(key)] = newValue }
-  }
-
-  private func defaultValue<Key: DependencyKey>(key: Key.Type) -> Key.Value {
-    if ProcessInfo.isRunningUnitTests { return key.testValue }
-    else if ProcessInfo.isRunningPreviews { return key.previewValue }
-    return key.defaultValue
+    get { self.stack[ObjectIdentifier(key)] as? Key.Value ?? key.environmentDefault }
+    set { self.stack[ObjectIdentifier(key)] = newValue }
   }
 
   mutating func push(_ dependencies: Dependencies) {
-    self.storage.append(self.values)
-    self.values.merge(dependencies.values) { $1 }
+    self.stack.push(dependencies.stack)
   }
 
   mutating func popLast() {
-    self.storage.removeLast()
-    if self.storage.isEmpty { self.storage.append([:]) }
+    self.stack.popLast()
   }
 
   @ThreadSafe static var shared = Dependencies()
@@ -44,8 +31,6 @@ public struct Dependencies {
 extension Dependencies {
   @ThreadSafe private static var store: [ObjectIdentifier: Dependencies] = [:]
   @ThreadSafe private static var inheritanceRelationships: [ObjectIdentifier: () -> ObjectIdentifier?] = [:]
-
-  private static let lock = NSRecursiveLock()
 
   static func bind<ObjectType: AnyObject>(
     _ dependencies: Dependencies,
@@ -70,7 +55,6 @@ extension Dependencies {
   }
 
   static func inheritedDependencies(for id: ObjectIdentifier) -> Dependencies? {
-    // TODO: Clean up with Token
     guard var rootId = Self.inheritanceRelationships[id]?() else { return nil }
     while let parentId = Self.inheritanceRelationships[rootId]?() {
       rootId = parentId
@@ -80,11 +64,8 @@ extension Dependencies {
 
   static func `for`<ObjectType: AnyObject>(_ object: ObjectType) -> Dependencies {
     let id = Dependencies.id(for: object)
-
-    if var dependencies = inheritedDependencies(for: id) ?? store[id] {
-      if Dependencies.shared.hasMergedValues {
-        dependencies.push(Dependencies.shared)
-      }
+    if var dependencies = Self.inheritedDependencies(for: id) ?? Self.store[id] {
+      if Dependencies.shared.hasPushedDependencies { dependencies.push(Dependencies.shared) }
       return dependencies
     } else {
       return Dependencies.shared
