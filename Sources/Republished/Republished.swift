@@ -36,16 +36,22 @@ public struct Republished<Value> {
     Publisher(self.subject)
   }
 
-  func republish<EnclosingSelf: AnyObject>(to object: EnclosingSelf) {
+  func republish<EnclosingSelf>(to object: EnclosingSelf)
+    where EnclosingSelf: ObservableObject,
+    EnclosingSelf.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
     guard self.subject.changePublisher == nil else { return }
-    self.subject.changePublisher = ObservableObjectPublisher.extract(from: object) ?? ObservableObjectPublisher()
+    self.subject.changePublisher = object.objectWillChange
   }
 
-  public static subscript<EnclosingSelf: AnyObject>(
+  public static subscript<EnclosingSelf>(
     _enclosingInstance object: EnclosingSelf,
     wrapped wrappedKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Value>,
     storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, Republished<Value>>
-  ) -> Value {
+  ) -> Value
+    where EnclosingSelf: ObservableObject,
+    EnclosingSelf.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
     get {
       object[keyPath: storageKeyPath].republish(to: object)
       return object[keyPath: storageKeyPath].subject.currentValue
