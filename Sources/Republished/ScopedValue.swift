@@ -2,7 +2,7 @@ import Combine
 import SwiftUI
 
 @propertyWrapper
-public struct Scoped<ObjectType, Value>: DynamicProperty
+public struct ScopedValue<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject
 {
   @UnobservedEnvironmentObject var object: ObjectType
@@ -13,6 +13,12 @@ public struct Scoped<ObjectType, Value>: DynamicProperty
   ) {
     self._scoped = .init(wrappedValue: .init(keyPath))
   }
+  
+  public init(
+    _ keyPath: KeyPath<ObjectType, Value>
+  ) where Value: ObservableObject {
+    self._scoped = .init(wrappedValue: .init(keyPath))
+  }
 
   public var wrappedValue: Value {
     self.scoped.value ?? self.object[keyPath: self.scoped.keyPath]
@@ -21,4 +27,11 @@ public struct Scoped<ObjectType, Value>: DynamicProperty
   public func update() {
     self.scoped.object = self.object
   }
+  
+//  class Scope<ObjectType, Value>: ObservableObject {
+//    
+//  }
 }
+
+
+
