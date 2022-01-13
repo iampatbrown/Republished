@@ -25,8 +25,8 @@ extension EnvironmentValues: Sequence {
 extension EnvironmentValues {
   func extract<T>(key: String, as type: T.Type) -> T? {
     #if DEBUG
-    if ProcessInfo.isRunningUnitTests, let object = EnvironmentValues.mockObjects[key] as? T {
-      return object
+    if ProcessInfo.isRunningUnitTests, let root = EnvironmentValues.mockObjects[key] as? T {
+      return root
     }
     #endif
     return self.first(where: { self.environmentKey(for: $0) == key })
