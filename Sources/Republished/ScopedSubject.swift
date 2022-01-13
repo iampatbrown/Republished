@@ -7,25 +7,16 @@ class ScopedSubject<ObjectType, Value>: ObservableObject, DynamicProperty
   ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   @UnobservedEnvironmentObject var root: ObjectType
-
-  var cancellable: AnyCancellable?
-
-  enum SubscriptionId: Equatable {
-    case value(root: ObjectIdentifier?)
-    case observable(object: ObjectIdentifier?, root: ObjectIdentifier?)
-  }
-
-  var subscriptionId: SubscriptionId?
-
+  let keyPath: KeyPath<ObjectType, Value>
   var isSending = false
 
-  let keyPath: KeyPath<ObjectType, Value>
-
-  var subscribe: (ObjectType, ScopedSubject) -> AnyCancellable?
-
-  var getSubscriptionId: (ObjectType) -> SubscriptionId?
+  var cancellable: AnyCancellable?
+  var subscriptionId: SubscriptionId?
 
   var currentValue: Value?
+
+  var subscribe: (ObjectType, ScopedSubject) -> AnyCancellable?
+  var getSubscriptionId: (ObjectType) -> SubscriptionId?
 
   var value: Value {
     get { self.currentValue ?? self.root[keyPath: self.keyPath] }
@@ -38,9 +29,6 @@ class ScopedSubject<ObjectType, Value>: ObservableObject, DynamicProperty
     self.objectWillChange.send()
     self.currentValue = value
     self.root[keyPath: keyPath] = value
-
-    self.updateSubscription(to: self.root)
-
     self.isSending = false
   }
 
@@ -64,39 +52,50 @@ class ScopedSubject<ObjectType, Value>: ObservableObject, DynamicProperty
     self.updateSubscription(to: self.root)
   }
 
-  init(_ keyPath: KeyPath<ObjectType, Value>) where ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher {
+  init(_ keyPath: KeyPath<ObjectType, Value>) {
     self.keyPath = keyPath
-
     self.subscribe = { $0.subscribe($1, scope: keyPath) }
-
-    self.getSubscriptionId = { root in
-      .value(root: ObjectIdentifier(root))
-    }
+    self.getSubscriptionId = { .value(root: ObjectIdentifier($0)) }
   }
 
-  convenience init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>)
-    where ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
-  {
-    self.init(keyPath as KeyPath<ObjectType, Value>)
+  init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>) {
+    self.keyPath = keyPath
+    self.subscribe = { $0.subscribe($1, scope: keyPath) }
+    self.getSubscriptionId = { .value(root: ObjectIdentifier($0)) }
   }
 
   init(_ keyPath: KeyPath<ObjectType, Value>)
-    where ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher,
+    where
+    Value: ObservableObject,
+    Value.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    self.keyPath = keyPath
+    self.subscribe = { $0.subscribe($1, scope: keyPath) }
+    self.getSubscriptionId = { .observable(object: ObjectIdentifier($0[keyPath: keyPath]), root: ObjectIdentifier($0)) }
+  }
+
+  init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>)
+    where
     Value: ObservableObject, Value.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     self.keyPath = keyPath
     self.subscribe = { $0.subscribe($1, scope: keyPath) }
-
-    self.getSubscriptionId = { root in
-      .observable(object: ObjectIdentifier(root[keyPath: keyPath]), root: ObjectIdentifier(root))
-    }
+    self.getSubscriptionId = { .observable(object: ObjectIdentifier($0[keyPath: keyPath]), root: ObjectIdentifier($0)) }
   }
 
-  convenience init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>)
-    where ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher,
-    Value: ObservableObject, Value.ObjectWillChangePublisher == ObservableObjectPublisher
-  {
-    self.init(keyPath as KeyPath<ObjectType, Value>)
+  enum SubscriptionId: Equatable {
+    case value(root: ObjectIdentifier?)
+    case observable(object: ObjectIdentifier?, root: ObjectIdentifier?)
+
+    static func == (lhs: SubscriptionId, rhs: SubscriptionId) -> Bool {
+      switch (lhs, rhs) {
+      case let (.value(lhsRootId), .value(rhsRootId)):
+        return lhsRootId == rhsRootId
+      case let (.observable(lhsObjectId, lhsRootId), .observable(rhsObjectId, rhsRootId)):
+        return lhsObjectId == rhsObjectId && lhsRootId == rhsRootId
+      default: return false
+      }
+    }
   }
 }
 
@@ -140,9 +139,9 @@ extension ObservableObject {
     let parentCancellable = self.objectWillChange
       .filter { [weak subject] _ in subject.map { !$0.isSending } ?? false }
       .receive(on: DispatchQueue.main)
-      .sink { [weak subject, weak self] _ in
-        guard let self = self, let subject = subject, !subject.isSending else { return }
-        subject.updateSubscription(to: self)
+      .sink { [weak subject] _ in
+        guard let subject = subject, !subject.isSending else { return }
+        subject.updateSubscription(to: subject.root)
       }
 
     return AnyCancellable { _ = (childCancellable, parentCancellable) }

@@ -34,7 +34,7 @@ private class Child: ObservableObject {
 final class ScopedTests: XCTestCase {
   var cancellables: Set<AnyCancellable> = []
 
-  func testBasicObject() async throws {
+  func testBasicObject() throws {
     var oldValues: [Int] = []
 
     let child0 = Child(value: 0)
@@ -52,12 +52,15 @@ final class ScopedTests: XCTestCase {
       scoped.update()
 
       root.child = child1
-      self.wait(for: 0.05)
+      XCTAssertTrue(scoped.value === child0)
+      self.wait(for: 0.001)
+      XCTAssertEqual(oldValues, [0])
       scoped.value = child2
-      self.wait(for: 0.05)
+      XCTAssertEqual(oldValues, [0, 1])
+      XCTAssertTrue(scoped.value === child2)
+      XCTAssertTrue(root.child === child2)
       root.child = child0
-      self.wait(for: 0.05)
-
+      self.wait(for: 0.001)
       XCTAssertEqual(oldValues, [0, 1, 2])
 
       XCTAssertTrue(scoped.value === child0)
@@ -72,13 +75,12 @@ final class ScopedTests: XCTestCase {
     }
   }
 
-  func testObjectSwap() async throws {
+  func testObjectSwap() throws {
     var oldValues: [Int] = []
 
     let child0 = Child(value: 0)
     let child1 = Child(value: 1)
-    let child2 = Child(value: 2)
-    let child3 = Child(value: 3)
+
     let root = Parent(child: child0)
     let root2 = Parent(child: child0)
 
@@ -93,21 +95,21 @@ final class ScopedTests: XCTestCase {
         scoped.update()
         XCTAssertTrue(scoped.value === child0)
         root2.child = child1
-        self.wait(for: 0.05)
+        self.wait(for: 0.001)
         XCTAssertTrue(scoped.value === child1)
       }
     }
   }
 
-  func testBasicValue() async throws {
+  func testBasicValue() throws {
     var oldValues: [Int] = []
 
     let child0 = Child(value: 0)
     let child1 = Child(value: 1)
     let child2 = Child(value: 2)
-    let child3 = Child(value: 3)
+
     let root = Parent(child: child0)
-    let root2 = Parent(child: child3)
+    let root2 = Parent(child: child2)
 
     let scoped = ScopedSubject(\Parent.child.value)
     scoped.objectWillChange.sink { _ in
@@ -118,11 +120,11 @@ final class ScopedTests: XCTestCase {
       scoped.update()
 
       root.child = child1
-      self.wait(for: 0.05)
+      self.wait(for: 0.001)
       scoped.value = 2
-      self.wait(for: 0.05)
+      self.wait(for: 0.001)
       root.child.value = 0
-      self.wait(for: 0.05)
+      self.wait(for: 0.001)
 
       XCTAssertEqual(oldValues, [0, 1, 2])
 
@@ -130,10 +132,10 @@ final class ScopedTests: XCTestCase {
       withMockEnvironmentObjects(root2) {
         scoped.update()
         XCTAssertEqual(oldValues, [0, 1, 2, 0])
-        XCTAssertTrue(scoped.value == 3)
+        XCTAssertTrue(scoped.value == 2)
       }
       scoped.update()
-      XCTAssertEqual(oldValues, [0, 1, 2, 0, 3])
+      XCTAssertEqual(oldValues, [0, 1, 2, 0, 2])
       XCTAssertTrue(scoped.value == 0)
     }
   }
