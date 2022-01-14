@@ -1,12 +1,33 @@
 import Combine
 import SwiftUI
 
-class ScopedSubject<ObjectType, Value>: ObservableObject, DynamicProperty
+class ScopedSubject<ObjectType, Value>: ObservableObject
   where
   ObjectType: ObservableObject,
   ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
-  @UnobservedEnvironmentObject var root: ObjectType
+//  @UnobservedEnvironmentObject var root: ObjectType
+
+  weak var _root: ObjectType?
+
+  var root: ObjectType {
+    get {
+      guard let root = _root else {
+        fatalError(
+          """
+          No ObservableObject of type \(ObjectType.self) found. \
+          A View.environmentObject(_:) for \(ObjectType.self) may be missing as an ancestor of this view.
+          """
+        )
+      }
+      return root
+    }
+    set {
+      self._root = newValue
+      self.updateSubscription(to: newValue)
+    }
+  }
+
   let keyPath: KeyPath<ObjectType, Value>
   var isSending = false
 
@@ -15,11 +36,16 @@ class ScopedSubject<ObjectType, Value>: ObservableObject, DynamicProperty
 
   var currentValue: Value?
 
+  @Published var tap = 0
+  
   var subscribe: (ObjectType, ScopedSubject) -> AnyCancellable?
   var getSubscriptionId: (ObjectType) -> SubscriptionId?
 
   var value: Value {
-    get { self.currentValue ?? self.root[keyPath: self.keyPath] }
+    get {
+      print("currentValue: \(self.currentValue as Any), root: \(self.root[keyPath: self.keyPath])")
+      return self.currentValue ?? self.root[keyPath: self.keyPath]
+    }
     set { self.send(newValue) }
   }
 
@@ -48,9 +74,9 @@ class ScopedSubject<ObjectType, Value>: ObservableObject, DynamicProperty
     self.currentValue = root[keyPath: self.keyPath]
   }
 
-  func update() {
-    self.updateSubscription(to: self.root)
-  }
+//  func update() {
+//    self.updateSubscription(to: self.root)
+//  }
 
   init(_ keyPath: KeyPath<ObjectType, Value>) {
     self.keyPath = keyPath
@@ -105,25 +131,65 @@ extension ObservableObject {
     scope toScopedValue: KeyPath<Self, Value>
   ) -> AnyCancellable {
     self.objectWillChange
-      .compactMap { [weak self, weak subject] _ -> Value? in
+//      .print("scope.objectWillChange")
+//      .compactMap { [weak self, weak subject] _ -> Value? in
+//        guard
+//          let self = self,
+//          let subject = subject,
+//          !subject.isSending else { return nil }
+//        return self[keyPath: toScopedValue]
+//      }
+//      .receive(on: DispatchQueue.main)
+      .sink { [weak self, weak subject] _ in
         guard
-          let self = self,
           let subject = subject,
-          !subject.isSending else { return nil }
-        return self[keyPath: toScopedValue]
-      }
-      .receive(on: DispatchQueue.main)
-      .sink { [weak self, weak subject] oldValue in
-        guard
-          let self = self,
-          let subject = subject
-        else { return }
-        let newValue = self[keyPath: toScopedValue]
-        guard !areEqual(oldValue, newValue) else { return }
-        subject.objectWillChange.send()
-        subject.currentValue = newValue
+          !subject.isSending else { return }
+
+        let oldValue = subject.value
+        Swift.print("oldValue: \(oldValue)")
+        DispatchQueue.main.async { [weak self, weak subject] in
+          guard
+            let self = self,
+            let subject = subject
+          else { return }
+          let newValue = self[keyPath: toScopedValue]
+          Swift.print("newValue: \(newValue)")
+          guard !areEqual(oldValue, newValue) else { return }
+          print("objectWillChange.send()")
+          subject.objectWillChange.send()
+          subject.currentValue = newValue
+        }
       }
   }
+
+//  func subscribe<Value>(
+//    _ subject: ScopedSubject<Self, Value>,
+//    scope toScopedValue: KeyPath<Self, Value>
+//  ) -> AnyCancellable {
+//    self.objectWillChange
+//      .print("scope.objectWillChange")
+//      .compactMap { [weak self, weak subject] _ -> Value? in
+//        guard
+//          let self = self,
+//          let subject = subject,
+//          !subject.isSending else { return nil }
+//        return self[keyPath: toScopedValue]
+//      }
+//      .receive(on: DispatchQueue.main)
+//      .sink { [weak self, weak subject] oldValue in
+//        Swift.print("oldValue: \(oldValue)")
+//        guard
+//          let self = self,
+//          let subject = subject
+//        else { return }
+//        let newValue = self[keyPath: toScopedValue]
+//        Swift.print("newValue: \(newValue)")
+//        guard !areEqual(oldValue, newValue) else { return }
+//        print("objectWillChange ID: \(ObjectIdentifier(subject.objectWillChange))")
+//        subject.objectWillChange.send()
+//        subject.currentValue = newValue
+//      }
+//  }
 
   func subscribe<Value>(
     _ subject: ScopedSubject<Self, Value>,

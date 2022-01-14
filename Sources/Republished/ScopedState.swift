@@ -3,10 +3,10 @@ import SwiftUI
 
 @propertyWrapper
 public struct ScopedState<ObjectType, Value>: DynamicProperty
-  where ObjectType: ObservableObject
+  where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
-  @UnobservedEnvironmentObject var object: ObjectType
-  @StateObject var scoped: ScopedObject<ObjectType, Value>
+  @UnobservedEnvironmentObject var root: ObjectType
+  @StateObject var scoped: ScopedSubject<ObjectType, Value>
 
   public init(
     _ keyPath: ReferenceWritableKeyPath<ObjectType, Value>
@@ -15,10 +15,9 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
   }
 
   public var wrappedValue: Value {
-    get { self.scoped.value ?? self.object[keyPath: self.scoped.keyPath] }
+    get { self.scoped.value }
     nonmutating set {
-      guard let keyPath = self.scoped.keyPath as? ReferenceWritableKeyPath<ObjectType, Value> else { return }
-      self.object[keyPath: keyPath] = newValue
+      self.scoped.value = newValue
     }
   }
 
@@ -30,6 +29,6 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
   }
 
   public func update() {
-    self.scoped.object = self.object
+    self.scoped.root = self.root
   }
 }
