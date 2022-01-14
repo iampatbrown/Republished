@@ -33,7 +33,9 @@ public struct Republished<Value> {
   }
 
   public var projectedValue: Publisher {
-    Publisher(self.subject)
+    get { Publisher(self.subject) }
+    set { }
+    
   }
 
   func republish<EnclosingSelf>(to object: EnclosingSelf)

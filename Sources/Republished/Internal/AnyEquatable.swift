@@ -13,7 +13,14 @@ extension Box: AnyEquatable where T: Equatable {
 @usableFromInline
 func areEqual(_ lhs: Any, _ rhs: Any) -> Bool {
   func open<LHS>(_: LHS.Type) -> Bool? {
-    (Box<LHS>.self as? AnyEquatable.Type)?.areEqual(lhs, rhs)
+    if let box = (Box<LHS>.self as? AnyEquatable.Type) {
+      print("are equatablable")
+      return box.areEqual(lhs, rhs)
+    } else {
+      print("not equatable")
+      return nil
+    }
+    
   }
   return _openExistential(type(of: lhs), do: open) ?? false
 }

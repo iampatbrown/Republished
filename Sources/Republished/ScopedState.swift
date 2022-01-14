@@ -6,16 +6,24 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   @UnobservedEnvironmentObject var root: ObjectType
-  @StateObject var scoped: ScopedSubject<ObjectType, Value>
+  @State var scoped: ScopedSubject<ObjectType, Value>
+
 
   public init(
     _ keyPath: ReferenceWritableKeyPath<ObjectType, Value>
   ) {
     self._scoped = .init(wrappedValue: .init(keyPath))
+
   }
 
+
+
   public var wrappedValue: Value {
-    get { self.scoped.value }
+    get {
+      let value = self.tap.value!
+      print("GETTER \(value)")
+      return value
+    }
     nonmutating set {
       self.scoped.value = newValue
     }
@@ -28,7 +36,25 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
     )
   }
 
-  public func update() {
-    self.scoped.root = self.root
+  public mutating func update() {
+    print("Update Before \(self.tap.value)")
+    if self.scoped._root !== self.root {
+      self.scoped.root = self.root
+      tap.cancellable = nil
+      tap.cancellable = self.scoped.objectWillChange.print().sink(receiveValue: { [weak tap] _ in
+        print("hererleroelroel")
+        tap?.tap = ()
+      })
+    }
+    self.tap.value = self.scoped.value
+    print("Update After \(self.tap.value)")
+  }
+
+  @StateObject var tap = Tap()
+
+  class Tap: ObservableObject {
+    var value: Value?
+    var cancellable: AnyCancellable?
+    @Published var tap: Void = ()
   }
 }

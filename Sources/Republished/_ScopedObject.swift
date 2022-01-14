@@ -1,7 +1,7 @@
 import Combine
 import SwiftUI
 
-class ScopedObject<ObjectType, Value>: ObservableObject
+class _ScopedObject<ObjectType, Value>: ObservableObject
   where
   ObjectType: ObservableObject
 
