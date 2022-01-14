@@ -23,9 +23,10 @@ class ScopedSubject<ObjectType, Value>: ObservableObject
       return root
     }
     set {
-      self._root = newValue
       self.updateSubscription(to: newValue)
+      self._root = newValue
     }
+    
   }
 
   let keyPath: KeyPath<ObjectType, Value>

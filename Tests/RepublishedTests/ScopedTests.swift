@@ -48,31 +48,28 @@ final class ScopedTests: XCTestCase {
     scoped.objectWillChange.sink { _ in
       oldValues.append(scoped.value.value)
     }.store(in: &self.cancellables)
-    withMockEnvironmentObjects(root) {
-      scoped.update()
+    scoped.root = root
 
-      root.child = child1
-      XCTAssertTrue(scoped.value === child0)
-      self.wait(for: 0.001)
-      XCTAssertEqual(oldValues, [0])
-      scoped.value = child2
-      XCTAssertEqual(oldValues, [0, 1])
-      XCTAssertTrue(scoped.value === child2)
-      XCTAssertTrue(root.child === child2)
-      root.child = child0
-      self.wait(for: 0.001)
-      XCTAssertEqual(oldValues, [0, 1, 2])
+    root.child = child1
+    XCTAssertTrue(scoped.value === child0)
+    self.wait(for: 0.001)
+    XCTAssertEqual(oldValues, [0])
+    scoped.value = child2
+    XCTAssertEqual(oldValues, [0, 1])
+    XCTAssertTrue(scoped.value === child2)
+    XCTAssertTrue(root.child === child2)
+    root.child = child0
+    self.wait(for: 0.001)
+    XCTAssertEqual(oldValues, [0, 1, 2])
 
-      XCTAssertTrue(scoped.value === child0)
-      withMockEnvironmentObjects(root2) {
-        scoped.update()
-        XCTAssertEqual(oldValues, [0, 1, 2, 0])
-        XCTAssertTrue(scoped.value === child3)
-      }
-      scoped.update()
-      XCTAssertEqual(oldValues, [0, 1, 2, 0, 3])
-      XCTAssertTrue(scoped.value === child0)
-    }
+    XCTAssertTrue(scoped.value === child0)
+    scoped.root = root2
+
+    XCTAssertEqual(oldValues, [0, 1, 2, 0])
+    XCTAssertTrue(scoped.value === child3)
+    scoped.root = root
+    XCTAssertEqual(oldValues, [0, 1, 2, 0, 3])
+    XCTAssertTrue(scoped.value === child0)
   }
 
   func testObjectSwap() throws {
@@ -80,25 +77,25 @@ final class ScopedTests: XCTestCase {
 
     let child0 = Child(value: 0)
     let child1 = Child(value: 1)
-
+    let child2 = Child(value: 2)
+    
     let root = Parent(child: child0)
-    let root2 = Parent(child: child0)
+    let root2 = Parent(child: child2)
 
     let scoped = ScopedSubject(\Parent.child)
     scoped.objectWillChange.sink { _ in
       oldValues.append(scoped.value.value)
     }.store(in: &self.cancellables)
 
-    withMockEnvironmentObjects(root) {
-      scoped.update()
-      withMockEnvironmentObjects(root2) {
-        scoped.update()
-        XCTAssertTrue(scoped.value === child0)
-        root2.child = child1
-        self.wait(for: 0.001)
-        XCTAssertTrue(scoped.value === child1)
-      }
-    }
+    scoped.root = root
+
+    scoped.root = root2
+
+    XCTAssertTrue(scoped.value === child2)
+    scoped.root = root
+    root2.child = child1
+    self.wait(for: 0.001)
+    XCTAssertTrue(scoped.value === child0)
   }
 
   func testBasicValue() throws {
@@ -116,27 +113,24 @@ final class ScopedTests: XCTestCase {
       oldValues.append(scoped.value)
     }.store(in: &self.cancellables)
 
-    withMockEnvironmentObjects(root) {
-      scoped.update()
+    scoped.root = root
 
-      root.child = child1
-      self.wait(for: 0.001)
-      scoped.value = 2
-      self.wait(for: 0.001)
-      root.child.value = 0
-      self.wait(for: 0.001)
+    root.child = child1
+    self.wait(for: 0.001)
+    scoped.value = 2
+    self.wait(for: 0.001)
+    root.child.value = 0
+    self.wait(for: 0.001)
 
-      XCTAssertEqual(oldValues, [0, 1, 2])
+    XCTAssertEqual(oldValues, [0, 1, 2])
 
-      XCTAssertTrue(scoped.value == 0)
-      withMockEnvironmentObjects(root2) {
-        scoped.update()
-        XCTAssertEqual(oldValues, [0, 1, 2, 0])
-        XCTAssertTrue(scoped.value == 2)
-      }
-      scoped.update()
-      XCTAssertEqual(oldValues, [0, 1, 2, 0, 2])
-      XCTAssertTrue(scoped.value == 0)
-    }
+    XCTAssertTrue(scoped.value == 0)
+
+    scoped.root = root2
+    XCTAssertEqual(oldValues, [0, 1, 2, 0])
+    XCTAssertTrue(scoped.value == 2)
+    scoped.root = root
+    XCTAssertEqual(oldValues, [0, 1, 2, 0, 2])
+    XCTAssertTrue(scoped.value == 0)
   }
 }
