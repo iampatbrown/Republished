@@ -1,4 +1,5 @@
 import Combine
+import SwiftUI
 
 private enum Box<T> {}
 
@@ -23,3 +24,5 @@ extension ObservableObjectPublisher {
     return _openExistential(type(of: object), do: open)
   }
 }
+
+

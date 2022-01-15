@@ -44,7 +44,7 @@ final class ScopedTests: XCTestCase {
     let root = Parent(child: child0)
     let root2 = Parent(child: child3)
 
-    let scoped = ScopedSubject(\Parent.child)
+    let scoped = _ScopedSubject(\Parent.child)
     scoped.objectWillChange.sink { _ in
       oldValues.append(scoped.value.value)
     }.store(in: &self.cancellables)
@@ -82,7 +82,7 @@ final class ScopedTests: XCTestCase {
     let root = Parent(child: child0)
     let root2 = Parent(child: child2)
 
-    let scoped = ScopedSubject(\Parent.child)
+    let scoped = _ScopedSubject(\Parent.child)
     scoped.objectWillChange.sink { _ in
       oldValues.append(scoped.value.value)
     }.store(in: &self.cancellables)
@@ -108,7 +108,7 @@ final class ScopedTests: XCTestCase {
     let root = Parent(child: child0)
     let root2 = Parent(child: child2)
 
-    let scoped = ScopedSubject(\Parent.child.value)
+    let scoped = _ScopedSubject(\Parent.child.value)
     scoped.objectWillChange.sink { _ in
       oldValues.append(scoped.value)
     }.store(in: &self.cancellables)

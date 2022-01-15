@@ -1,7 +1,7 @@
 import Combine
 import SwiftUI
 
-class ScopedSubject<ObjectType, Value>: ObservableObject
+class _ScopedSubject<ObjectType, Value>: ObservableObject
   where
   ObjectType: ObservableObject,
   ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
@@ -36,7 +36,7 @@ class ScopedSubject<ObjectType, Value>: ObservableObject
 
   var currentValue: Value!
 
-  var subscribe: (ObjectType, ScopedSubject) -> AnyCancellable?
+  var subscribe: (ObjectType, _ScopedSubject) -> AnyCancellable?
   var getSubscriptionId: (ObjectType) -> SubscriptionId?
 
   var value: Value {
@@ -126,47 +126,10 @@ class ScopedSubject<ObjectType, Value>: ObservableObject
 }
 
 extension ObservableObject {
-//  func subscribe<Value>(
-//    _ subject: ScopedSubject<Self, Value>,
-//    scope toScopedValue: KeyPath<Self, Value>
-//  ) -> AnyCancellable {
-//    self.objectWillChange
-  ////      .print("scope.objectWillChange")
-  ////      .compactMap { [weak self, weak subject] _ -> Value? in
-  ////        guard
-  ////          let self = self,
-  ////          let subject = subject,
-  ////          !subject.isSending else { return nil }
-  ////        return self[keyPath: toScopedValue]
-  ////      }
-  ////      .receive(on: DispatchQueue.main)
-//      .sink { [weak self, weak subject] _ in
-//        guard
-//          let self = self,
-//          let subject = subject,
-//          !subject.isSending else { return }
-  ////        subject.objectWillChange.send()
-//        let oldValue = self[keyPath: toScopedValue]
-//        Swift.print("oldValue: \(oldValue)")
-//        DispatchQueue.main.async { [weak self, weak subject] in
-//          guard
-//            let self = self,
-//            let subject = subject
-//          else { return }
-//          let newValue = self[keyPath: toScopedValue]
-//          Swift.print("newValue: \(newValue)")
-//          guard !areEqual(oldValue, newValue) else { return }
-//
-//          print("objectWillChange.send()")
-//
-//          subject.currentValue = newValue
-//
-//        }
-//      }
-//  }
+
 
   func subscribe<Value>(
-    _ subject: ScopedSubject<Self, Value>,
+    _ subject: _ScopedSubject<Self, Value>,
     scope toScopedValue: KeyPath<Self, Value>
   ) -> AnyCancellable {
     self.objectWillChange
@@ -189,7 +152,7 @@ extension ObservableObject {
   }
 
   func subscribe<Value>(
-    _ subject: ScopedSubject<Self, Value>,
+    _ subject: _ScopedSubject<Self, Value>,
     scope toScopedValue: KeyPath<Self, Value>
   ) -> AnyCancellable
     where

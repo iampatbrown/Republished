@@ -6,7 +6,7 @@ public struct ScopedState<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   @UnobservedEnvironmentObject var root: ObjectType
-  @State var scoped: ScopedSubject<ObjectType, Value>
+  @State var scoped: _ScopedSubject<ObjectType, Value>
 
 
   public init(

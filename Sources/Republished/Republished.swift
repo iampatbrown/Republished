@@ -34,8 +34,7 @@ public struct Republished<Value> {
 
   public var projectedValue: Publisher {
     get { Publisher(self.subject) }
-    set { }
-    
+    set {}
   }
 
   func republish<EnclosingSelf>(to object: EnclosingSelf)
@@ -151,5 +150,11 @@ extension Collection where Element: ObservableObject {
   func inheritDependencies<Value>(from subject: Republished<Value>.Subject) -> AnyCancellable {
     let cancellables = self.map { $0.inheritDependencies(from: subject) }
     return AnyCancellable { _ = cancellables }
+  }
+}
+
+extension Publisher where Failure == Never {
+  public func assign(to republished: inout Republished<Output>.Publisher) {
+    self.assign(to: &republished.subject.$currentValue)
   }
 }
