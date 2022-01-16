@@ -76,3 +76,4 @@ extension Dependencies {
     ObservableObjectPublisher.extract(from: object).map(ObjectIdentifier.init) ?? ObjectIdentifier(object)
   }
 }
+
