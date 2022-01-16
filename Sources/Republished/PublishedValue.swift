@@ -6,7 +6,7 @@ public struct PublishedValue<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   @UnobservedEnvironmentObject var root: ObjectType
-  @StateObject var subject: PublishedValueSubject<ObjectType, Value>
+  @StateObject var subject: Subject
 
   public init(_ keyPath: KeyPath<ObjectType, Published<Value>.Publisher>) {
     self._subject = .init(wrappedValue: .init(keyPath))
@@ -23,39 +23,36 @@ public struct PublishedValue<ObjectType, Value>: DynamicProperty
   public func update() {
     self.subject.root = self.root
   }
-}
 
-class PublishedValueSubject<ObjectType, Value>: ObservableObject
-  where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
-{
-  var currentValue: Value?
-  
-  var synchronize: (PublishedValueSubject, ObjectType) -> Void
-  var cancellable: AnyCancellable?
+  class Subject: ObservableObject {
+    var currentValue: Value?
 
-  weak var root: ObjectType? {
-    didSet {
-      guard oldValue !== root, let root = root else { return }
-      self.synchronize(self, root)
+    var synchronize: (Subject, ObjectType) -> Void
+    var cancellable: AnyCancellable?
+
+    weak var root: ObjectType? {
+      didSet {
+        guard oldValue !== root, let root = root else { return }
+        self.synchronize(self, root)
+      }
+    }
+
+    var value: Value {
+      guard let currentValue = currentValue else { fatalError() }
+      return currentValue
+    }
+
+    init(_ keyPath: KeyPath<ObjectType, Published<Value>.Publisher>) {
+      self.synchronize = { $0.synchronize(with: $1[keyPath: keyPath]) }
+    }
+
+    init(_ keyPath: KeyPath<ObjectType, Republished<Value>.Publisher>) {
+      self.synchronize = { $0.synchronize(with: $1[keyPath: keyPath]) }
     }
   }
-  
-
-  var value: Value {
-    guard let currentValue = currentValue else { fatalError() }
-    return currentValue
-  }
-
-  init(_ keyPath: KeyPath<ObjectType, Published<Value>.Publisher>) {
-    self.synchronize = { $0.synchronize(with: $1[keyPath: keyPath]) }
-  }
-
-  init(_ keyPath: KeyPath<ObjectType, Republished<Value>.Publisher>) {
-    self.synchronize = { $0.synchronize(with: $1[keyPath: keyPath]) }
-  }
 }
 
-extension PublishedValueSubject {
+extension PublishedValue.Subject {
   func synchronize(with publisher: Published<Value>.Publisher) {
     _ = publisher.sink { self.currentValue = $0 }
     self.cancellable = nil
@@ -76,3 +73,6 @@ extension PublishedValueSubject {
     }
   }
 }
+
+
+
