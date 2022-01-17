@@ -1,5 +1,81 @@
 import Combine
 
+/// Synchronizes two `@Published` values
+///
+/// Description
+///
+/// Example
+public func synchronize<Value>(
+  _ p0: inout Published<Value>.Publisher,
+  _ p1: inout Published<Value>.Publisher
+) -> AnyCancellable {
+  let relay = SynchronizingRelay<Value>()
+  let c0 = relay.synchronize(with: &p0)
+  let c1 = relay.synchronize(with: &p1)
+
+  return AnyCancellable { _ = (relay, c0, c1) }
+}
+
+/// Synchronizes three `@Published` values
+///
+/// Description
+///
+/// Example
+public func synchronize<Value>(
+  _ p0: inout Published<Value>.Publisher,
+  _ p1: inout Published<Value>.Publisher,
+  _ p2: inout Published<Value>.Publisher
+) -> AnyCancellable {
+  let relay = SynchronizingRelay<Value>()
+  let c0 = relay.synchronize(with: &p0)
+  let c1 = relay.synchronize(with: &p1)
+  let c2 = relay.synchronize(with: &p2)
+
+  return AnyCancellable { _ = (relay, c0, c1, c2) }
+}
+
+/// Synchronizes four `@Published` values
+///
+/// Description
+///
+/// Example
+public func synchronize<Value>(
+  _ p0: inout Published<Value>.Publisher,
+  _ p1: inout Published<Value>.Publisher,
+  _ p2: inout Published<Value>.Publisher,
+  _ p3: inout Published<Value>.Publisher
+) -> AnyCancellable {
+  let relay = SynchronizingRelay<Value>()
+  let c0 = relay.synchronize(with: &p0)
+  let c1 = relay.synchronize(with: &p1)
+  let c2 = relay.synchronize(with: &p2)
+  let c3 = relay.synchronize(with: &p3)
+
+  return AnyCancellable { _ = (relay, c0, c1, c2, c3) }
+}
+
+/// Synchronizes five `@Published` values
+///
+/// Description
+///
+/// Example
+public func synchronize<Value>(
+  _ p0: inout Published<Value>.Publisher,
+  _ p1: inout Published<Value>.Publisher,
+  _ p2: inout Published<Value>.Publisher,
+  _ p3: inout Published<Value>.Publisher,
+  _ p4: inout Published<Value>.Publisher
+) -> AnyCancellable {
+  let relay = SynchronizingRelay<Value>()
+  let c0 = relay.synchronize(with: &p0)
+  let c1 = relay.synchronize(with: &p1)
+  let c2 = relay.synchronize(with: &p2)
+  let c3 = relay.synchronize(with: &p3)
+  let c4 = relay.synchronize(with: &p4)
+
+  return AnyCancellable { _ = (relay, c0, c1, c2, c3, c4) }
+}
+
 class SynchronizingRelay<Value> {
   let subject = PassthroughSubject<Value, Never>()
   var currentSender: CombineIdentifier?
@@ -18,60 +94,4 @@ class SynchronizingRelay<Value> {
       self.currentSender = nil
     }
   }
-}
-
-public func synchronize<Value>(
-  _ p0: inout Published<Value>.Publisher,
-  _ p1: inout Published<Value>.Publisher
-) -> AnyCancellable {
-  let relay = SynchronizingRelay<Value>()
-  let c0 = relay.synchronize(with: &p0)
-  let c1 = relay.synchronize(with: &p1)
-
-  return AnyCancellable { _ = (relay, c0, c1) }
-}
-
-public func synchronize<Value>(
-  _ p0: inout Published<Value>.Publisher,
-  _ p1: inout Published<Value>.Publisher,
-  _ p2: inout Published<Value>.Publisher
-) -> AnyCancellable {
-  let relay = SynchronizingRelay<Value>()
-  let c0 = relay.synchronize(with: &p0)
-  let c1 = relay.synchronize(with: &p1)
-  let c2 = relay.synchronize(with: &p2)
-
-  return AnyCancellable { _ = (relay, c0, c1, c2) }
-}
-
-public func synchronize<Value>(
-  _ p0: inout Published<Value>.Publisher,
-  _ p1: inout Published<Value>.Publisher,
-  _ p2: inout Published<Value>.Publisher,
-  _ p3: inout Published<Value>.Publisher
-) -> AnyCancellable {
-  let relay = SynchronizingRelay<Value>()
-  let c0 = relay.synchronize(with: &p0)
-  let c1 = relay.synchronize(with: &p1)
-  let c2 = relay.synchronize(with: &p2)
-  let c3 = relay.synchronize(with: &p3)
-
-  return AnyCancellable { _ = (relay, c0, c1, c2, c3) }
-}
-
-public func synchronize<Value>(
-  _ p0: inout Published<Value>.Publisher,
-  _ p1: inout Published<Value>.Publisher,
-  _ p2: inout Published<Value>.Publisher,
-  _ p3: inout Published<Value>.Publisher,
-  _ p4: inout Published<Value>.Publisher
-) -> AnyCancellable {
-  let relay = SynchronizingRelay<Value>()
-  let c0 = relay.synchronize(with: &p0)
-  let c1 = relay.synchronize(with: &p1)
-  let c2 = relay.synchronize(with: &p2)
-  let c3 = relay.synchronize(with: &p3)
-  let c4 = relay.synchronize(with: &p4)
-
-  return AnyCancellable { _ = (relay, c0, c1, c2, c3, c4) }
 }

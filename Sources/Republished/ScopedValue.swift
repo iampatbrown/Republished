@@ -1,6 +1,11 @@
 import Combine
 import SwiftUI
 
+/// A property wrapper type that can observe a value on an environment object.
+///
+/// Description
+///
+/// Example
 @propertyWrapper
 public struct ScopedValue<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
@@ -15,6 +20,7 @@ public struct ScopedValue<ObjectType, Value>: DynamicProperty
   public init(_ keyPath: KeyPath<ObjectType, Value>) where Value: Equatable {
     self._scoped = .init(wrappedValue: .init(keyPath))
   }
+  
 
   public var wrappedValue: Value {
     self.scoped.value

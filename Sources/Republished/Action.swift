@@ -1,7 +1,13 @@
 import Combine
 import SwiftUI
 
+
 @propertyWrapper
+/// A property wrapper type that for a function on an environment object.
+///
+/// Does not observe changes
+///
+/// Example
 public struct Action<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject
 {

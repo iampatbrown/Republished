@@ -1,6 +1,11 @@
 import Combine
 import SwiftUI
 
+/// A property wrapper type that can read and write a  value on an environment object.
+///
+/// Description
+///
+/// Example
 @propertyWrapper
 public struct ScopedBinding<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
