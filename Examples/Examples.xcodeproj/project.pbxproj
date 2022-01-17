@@ -13,13 +13,10 @@
 		23A7627E275D542200C01F3C /* DerivedBehavior2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A7627D275D542200C01F3C /* DerivedBehavior2App.swift */; };
 		23A76280275D542200C01F3C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A7627F275D542200C01F3C /* ContentView.swift */; };
 		23A76282275D542300C01F3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A76281275D542300C01F3C /* Assets.xcassets */; };
-		23A76285275D542300C01F3C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A76284275D542300C01F3C /* Preview Assets.xcassets */; };
 		23A7628A275D545000C01F3C /* FactClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23A76289275D545000C01F3C /* FactClient.swift */; };
 		23A7628C275D55C600C01F3C /* Republished in Frameworks */ = {isa = PBXBuildFile; productRef = 23A7628B275D55C600C01F3C /* Republished */; };
 		23AEA8F0275CB953000A21F0 /* DerivedBehaviorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEA8EF275CB953000A21F0 /* DerivedBehaviorApp.swift */; };
 		23AEA8F2275CB953000A21F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEA8F1275CB953000A21F0 /* ContentView.swift */; };
-		23AEA8F4275CB955000A21F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23AEA8F3275CB955000A21F0 /* Assets.xcassets */; };
-		23AEA8F7275CB955000A21F0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23AEA8F6275CB955000A21F0 /* Preview Assets.xcassets */; };
 		23AEA8FD275CB9CC000A21F0 /* Republished in Frameworks */ = {isa = PBXBuildFile; productRef = 23AEA8FC275CB9CC000A21F0 /* Republished */; };
 /* End PBXBuildFile section */
 
@@ -30,13 +27,11 @@
 		23A7627D275D542200C01F3C /* DerivedBehavior2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedBehavior2App.swift; sourceTree = "<group>"; };
 		23A7627F275D542200C01F3C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		23A76281275D542300C01F3C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		23A76284275D542300C01F3C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		23A76289275D545000C01F3C /* FactClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactClient.swift; sourceTree = "<group>"; };
 		23AEA8ED275CB953000A21F0 /* DerivedBehavior.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DerivedBehavior.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		23AEA8EF275CB953000A21F0 /* DerivedBehaviorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivedBehaviorApp.swift; sourceTree = "<group>"; };
 		23AEA8F1275CB953000A21F0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		23AEA8F3275CB955000A21F0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		23AEA8F6275CB955000A21F0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		23B1AFEC279573A500EFBC06 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,23 +59,14 @@
 		23A7627C275D542200C01F3C /* DerivedBehavior2 */ = {
 			isa = PBXGroup;
 			children = (
-				233F7C40275F293400DFD0A9 /* Info.plist */,
 				23A7627D275D542200C01F3C /* DerivedBehavior2App.swift */,
 				23A7627F275D542200C01F3C /* ContentView.swift */,
-				23A76281275D542300C01F3C /* Assets.xcassets */,
-				23A76283275D542300C01F3C /* Preview Content */,
-				23A76289275D545000C01F3C /* FactClient.swift */,
 				233F7C39275F155200DFD0A9 /* Dependencies.swift */,
+				23A76289275D545000C01F3C /* FactClient.swift */,
+				23B1AFEC279573A500EFBC06 /* Assets.xcassets */,
+				233F7C40275F293400DFD0A9 /* Info.plist */,
 			);
 			path = DerivedBehavior2;
-			sourceTree = "<group>";
-		};
-		23A76283275D542300C01F3C /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				23A76284275D542300C01F3C /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		23AEA8CF275CB8B9000A21F0 = {
@@ -107,18 +93,9 @@
 			children = (
 				23AEA8EF275CB953000A21F0 /* DerivedBehaviorApp.swift */,
 				23AEA8F1275CB953000A21F0 /* ContentView.swift */,
-				23AEA8F3275CB955000A21F0 /* Assets.xcassets */,
-				23AEA8F5275CB955000A21F0 /* Preview Content */,
+				23A76281275D542300C01F3C /* Assets.xcassets */,
 			);
 			path = DerivedBehavior;
-			sourceTree = "<group>";
-		};
-		23AEA8F5275CB955000A21F0 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				23AEA8F6275CB955000A21F0 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		23AEA8FB275CB9CC000A21F0 /* Frameworks */ = {
@@ -218,7 +195,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				23A76285275D542300C01F3C /* Preview Assets.xcassets in Resources */,
 				23A76282275D542300C01F3C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -227,8 +203,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				23AEA8F7275CB955000A21F0 /* Preview Assets.xcassets in Resources */,
-				23AEA8F4275CB955000A21F0 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,7 +239,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"DerivedBehavior2/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = G7SC3UG6VB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -295,7 +269,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"DerivedBehavior2/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = G7SC3UG6VB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -441,7 +415,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"DerivedBehavior/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = G7SC3UG6VB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -470,7 +444,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"DerivedBehavior/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = G7SC3UG6VB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

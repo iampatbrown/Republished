@@ -11,22 +11,36 @@ class AppViewModel: ObservableObject {
   var cancellables: Set<AnyCancellable> = []
 
   init() {
-    synchronize(&self.counter.$favorites, &self.profile.$favorites)
-      .store(in: &self.cancellables)
+    synchronize(
+      &self.counter.$favorites,
+      &self.profile.$favorites
+    ).store(in: &self.cancellables)
+  }
+}
+
+struct ProfileTabItem: View {
+  @ScopedValue(\AppViewModel.profile.favorites.count) var favoritesCount
+  var body: some View {
+    Self._printChanges()
+    return Text("Profile \(self.favoritesCount)")
   }
 }
 
 struct ContentView: View {
-  @ScopedState(\AppViewModel.counter.count) var count
-  @ScopedState(\AppViewModel.profile.favorites) var favorites
   var body: some View {
-    let _ = Self._printChanges()
-    TabView {
+    Self._printChanges()
+    return TabView {
       CounterView()
-        .tabItem { Text("Counter \(self.count)") }
+        .tabItem {
+          WithScopedValue(\AppViewModel.counter.count) { count in
+            Text("Counter \(count)")
+          }
+        }
 
       ProfileView()
-        .tabItem { Text("Profile \(self.favorites.count)") }
+        .tabItem {
+          ProfileTabItem()
+        }
     }
   }
 }
@@ -37,10 +51,10 @@ class CounterViewModel: ObservableObject {
 }
 
 struct CounterView: View {
-  @ScopedState(\AppViewModel.counter) var viewModel
+  @ScopedValue(\AppViewModel.counter) var viewModel
   var body: some View {
-    let _ = Self._printChanges()
-    VStack {
+    Self._printChanges()
+    return VStack {
       HStack {
         Button("-") { self.viewModel.count -= 1 }
         Text("\(self.viewModel.count)")
@@ -65,11 +79,11 @@ class ProfileViewModel: ObservableObject {
 }
 
 struct ProfileView: View {
-  @ScopedState(\AppViewModel.profile) var viewModel
+  @ScopedValue(\AppViewModel.profile) var viewModel
 
   var body: some View {
-    let _ = Self._printChanges()
-    List {
+    Self._printChanges()
+    return List {
       ForEach(self.viewModel.favorites.sorted(), id: \.self) { number in
         HStack {
           Text("\(number)")

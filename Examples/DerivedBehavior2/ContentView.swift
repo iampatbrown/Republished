@@ -1,5 +1,5 @@
 import Combine
-import DerivedBehavior
+
 import Republished
 import SwiftUI
 
@@ -7,27 +7,15 @@ import SwiftUI
 // https://github.com/pointfreeco/episode-code-samples/tree/main/0150-derived-behavior-pt5/
 
 class CounterViewModel: ObservableObject {
+  @Dependency(\.factClient) private var factClient
+  @Dependency(\.mainQueue) private var mainQueue
   @Published var alert: Alert?
   @Published var count = 0
-  @Dependency(\.factClient) var fact
-  @Dependency(\.mainQueue) var mainQueue
-  let onFact: (Int, String) -> Void
+  private let onFact: (Int, String) -> Void
+  private var fetchFactCancellable: AnyCancellable?
 
-  private var cancellables: Set<AnyCancellable> = []
-
-  init(
-    onFact: @escaping (Int, String) -> Void
-  ) {
+  init(onFact: @escaping (Int, String) -> Void) {
     self.onFact = onFact
-  }
-
-  struct Alert: Equatable, Identifiable {
-    var message: String
-    var title: String
-
-    var id: String {
-      self.title + self.message
-    }
   }
 
   func decrementButtonTapped() {
@@ -39,7 +27,7 @@ class CounterViewModel: ObservableObject {
   }
 
   func factButtonTapped() {
-    self.fact.fetch(self.count)
+    self.fetchFactCancellable = self.factClient.fetch(self.count)
       .receive(on: self.mainQueue.animation())
       .sink(
         receiveCompletion: { [weak self] completion in
@@ -52,7 +40,15 @@ class CounterViewModel: ObservableObject {
           self.onFact(self.count, fact)
         }
       )
-      .store(in: &self.cancellables)
+  }
+
+  struct Alert: Equatable, Identifiable {
+    var message: String
+    var title: String
+
+    var id: String {
+      self.title + self.message
+    }
   }
 }
 
@@ -80,12 +76,11 @@ struct CounterView: View {
 }
 
 class CounterRowViewModel: ObservableObject, Identifiable {
+  @Dependency(\.mainQueue) private var mainQueue
   @Republished var counter: CounterViewModel
-  @Dependency(\.mainQueue) var mainQueue
   let id: UUID
-  let onRemove: () -> Void
-
-  var cancellable: AnyCancellable?
+  private let onRemove: () -> Void
+  private var removeCancellable: AnyCancellable?
 
   init(
     counter: CounterViewModel,
@@ -98,7 +93,7 @@ class CounterRowViewModel: ObservableObject, Identifiable {
   }
 
   func removeButtonTapped() {
-    self.cancellable = Just(())
+    self.removeCancellable = Just(())
       .delay(for: .seconds(1), scheduler: self.mainQueue.animation())
       .sink { [weak self] in self?.onRemove() }
   }
@@ -120,31 +115,33 @@ struct CounterRowView: View {
         }
       }
     }
-    .buttonStyle(PlainButtonStyle())
+    .buttonStyle(.plain)
   }
 }
 
 class FactPromptViewModel: ObservableObject {
+  @Dependency(\.factClient) private var factClient
+  @Dependency(\.mainQueue) private var mainQueue
   let count: Int
   @Published var fact: String
-  @Published var isLoading = false
-  @Dependency(\.factClient) var factClient
-  @Dependency(\.mainQueue) var mainQueue
+  @Published var isLoading: Bool
 
-  private var cancellables: Set<AnyCancellable> = []
+  private var fetchFactCancellable: AnyCancellable?
 
   init(
     count: Int,
-    fact: String
+    fact: String,
+    isLoading: Bool = false
   ) {
     self.count = count
     self.fact = fact
+    self.isLoading = isLoading
   }
 
   func getAnotherFactButtonTapped() {
     self.isLoading = true
 
-    self.factClient.fetch(self.count)
+    self.fetchFactCancellable = self.factClient.fetch(self.count)
       .receive(on: self.mainQueue.animation())
       .sink(
         receiveCompletion: { [weak self] _ in
@@ -154,7 +151,6 @@ class FactPromptViewModel: ObservableObject {
           self?.fact = fact
         }
       )
-      .store(in: &self.cancellables)
   }
 }
 
@@ -196,22 +192,15 @@ struct FactPrompt: View {
   }
 }
 
-struct IdentifiedArray<Element: Identifiable> {
-  var ids: [Element.ID]
-  var lookup: [Element.ID: Element]
-}
-
 class AppViewModel: ObservableObject {
+  @Dependency(\.factClient) private var fact
+  @Dependency(\.uuid) private var uuid
   @Republished var counters: [CounterRowViewModel] = []
   @Republished var factPrompt: FactPromptViewModel?
-  @Dependency(\.factClient) var fact
-  @Dependency(\.uuid) var uuid
 
   private var cancellables: Set<AnyCancellable> = []
 
-  var sum: Int {
-    self.counters.reduce(0) { $0 + $1.counter.count }
-  }
+  var sum: Int { self.counters.reduce(0) { $0 + $1.counter.count } }
 
   func addButtonTapped() {
     let counterViewModel = CounterViewModel(
@@ -250,9 +239,9 @@ class AppViewModel: ObservableObject {
 }
 
 struct AppView: View {
-  @Scoped(\AppViewModel.sum) var sum
-  @Scoped(\AppViewModel.counters) var counters
-  @Scoped(\AppViewModel.factPrompt) var factPrompt
+  @ScopedValue(\AppViewModel.counters) var counters
+  @ScopedValue(\AppViewModel.factPrompt) var factPrompt
+  @ScopedValue(\AppViewModel.sum) var sum
   @Action(AppViewModel.addButtonTapped) var addButtonTapped
   @Action(AppViewModel.dismissFactPrompt) var dismissFactPrompt
 
@@ -261,7 +250,6 @@ struct AppView: View {
     return ZStack(alignment: .bottom) {
       List {
         Text("Sum: \(self.sum)")
-
         ForEach(self.counters, content: CounterRowView.init)
       }
       .navigationTitle("Counters")
