@@ -32,22 +32,26 @@ extension Dependencies {
   @ThreadSafe private static var store: [ObjectIdentifier: Dependencies] = [:]
   @ThreadSafe private static var inheritanceRelationships: [ObjectIdentifier: () -> ObjectIdentifier?] = [:]
 
-  static func bind<ObjectType: AnyObject>(
+  static func bind<ObjectType>(
     _ dependencies: Dependencies,
     to object: ObjectType
-  ) -> AnyCancellable {
-    let id = Dependencies.id(for: object)
+  ) -> AnyCancellable
+    where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    let id = ObjectIdentifier(object.objectWillChange)
     Self.store[id] = dependencies
     return AnyCancellable {
       Self.store[id] = nil
     }
   }
 
-  static func bindInheritance<ObjectType: AnyObject>(
+  static func bindInheritance<ObjectType>(
     _ object: ObjectType,
     parentId: @escaping () -> ObjectIdentifier?
-  ) -> AnyCancellable {
-    let id = Dependencies.id(for: object)
+  ) -> AnyCancellable
+    where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    let id = ObjectIdentifier(object.objectWillChange)
     Self.inheritanceRelationships[id] = parentId
     return AnyCancellable {
       Self.inheritanceRelationships[id] = nil
@@ -62,8 +66,10 @@ extension Dependencies {
     return Self.store[rootId]
   }
 
-  static func `for`<ObjectType: AnyObject>(_ object: ObjectType) -> Dependencies {
-    let id = Dependencies.id(for: object)
+  static func `for`<ObjectType>(_ object: ObjectType) -> Dependencies
+    where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    let id = ObjectIdentifier(object.objectWillChange)
     if var dependencies = Self.inheritedDependencies(for: id) ?? Self.store[id] {
       if Dependencies.shared.hasPushedDependencies { dependencies.push(Dependencies.shared) }
       return dependencies
@@ -71,9 +77,4 @@ extension Dependencies {
       return Dependencies.shared
     }
   }
-
-  static func id<ObjectType: AnyObject>(for object: ObjectType) -> ObjectIdentifier {
-    ObservableObjectPublisher.extract(from: object).map(ObjectIdentifier.init) ?? ObjectIdentifier(object)
-  }
 }
-

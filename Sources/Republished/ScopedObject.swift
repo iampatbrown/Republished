@@ -1,60 +1,34 @@
 import Combine
 import SwiftUI
 
-public protocol ObjectScope {
-  associatedtype Root where Root: ObservableObject, Root.ObjectWillChangePublisher == ObservableObjectPublisher
-  associatedtype Value
-  func get(from root: Root) -> Value
-}
-
-public protocol WrittableObjectScope: ObjectScope {
-  func set(_ value: Value, on root: Root)
-}
-
-extension KeyPath: ObjectScope
-  where Root: ObservableObject, Root.ObjectWillChangePublisher == ObservableObjectPublisher
+class ScopedObject<ObjectType, Value>: ObservableObject
+  where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
-  public func get(from root: Root) -> Value {
-    root[keyPath: self]
-  }
-}
-
-extension ReferenceWritableKeyPath: WrittableObjectScope
-  where Root: ObservableObject, Root.ObjectWillChangePublisher == ObservableObjectPublisher
-{
-  public func set(_ value: Value, on root: Root) {
-    root[keyPath: self] = value
-  }
-}
-
-
-
-class ScopedObject<Scope: ObjectScope>: ObservableObject {
-  let scope: Scope
-  var currentValue: Scope.Value?
+  let keyPath: KeyPath<ObjectType, Value>
+  var currentValue: Value?
   var pendingEvents: [RootEvent] = []
   var cancellable: AnyCancellable?
-  let isDuplicate: (Scope.Value, Scope.Value) -> Bool
+  let isDuplicate: (Value, Value) -> Bool
 
-  weak var root: Scope.Root? {
+  weak var root: ObjectType? {
     didSet {
       guard oldValue !== root, let root = root else { return }
       self.synchronize(with: root)
     }
   }
 
-  var value: Scope.Value {
+  var value: Value {
     guard let currentValue = self.currentValue else { fatalError() }
     return currentValue
   }
 
-  init(scope: Scope, isDuplicate: @escaping (Scope.Value, Scope.Value) -> Bool) {
-    self.scope = scope
+  init(_ keyPath: KeyPath<ObjectType, Value>, isDuplicate: @escaping (Value, Value) -> Bool) {
+    self.keyPath = keyPath
     self.isDuplicate = isDuplicate
   }
 
-  init(scope: Scope) where Scope.Value: Equatable {
-    self.scope = scope
+  init(_ keyPath: KeyPath<ObjectType, Value>) where Value: Equatable {
+    self.keyPath = keyPath
     self.isDuplicate = { $0 == $1 }
   }
 
@@ -76,8 +50,8 @@ class ScopedObject<Scope: ObjectScope>: ObservableObject {
     }
   }
 
-  func synchronize(with root: Scope.Root) {
-    self.currentValue = self.scope.get(from: root)
+  func synchronize(with root: ObjectType) {
+    self.currentValue = root[keyPath: self.keyPath]
     self.cancellable = nil
 
     let runLoopObserver = RunLoopObserver { [weak self] in
@@ -87,7 +61,7 @@ class ScopedObject<Scope: ObjectScope>: ObservableObject {
         if let next = self.pendingEvents.first {
           event.newValue = next.oldValue
         } else {
-          event.newValue = self.root.map(self.scope.get)
+          event.newValue = self.root?[keyPath: self.keyPath]
         }
         self.apply(event)
       }
@@ -96,7 +70,7 @@ class ScopedObject<Scope: ObjectScope>: ObservableObject {
     let cancellable = root.objectWillChange.sink { [weak self] _ in
       guard let self = self else { return }
       let event = RootEvent(
-        oldValue: self.root.map(self.scope.get),
+        oldValue: self.root?[keyPath: self.keyPath],
         transaction: Transaction.current
       )
       self.pendingEvents.append(event)
@@ -108,25 +82,8 @@ class ScopedObject<Scope: ObjectScope>: ObservableObject {
   }
 
   struct RootEvent {
-    var oldValue: Scope.Value?
-    var newValue: Scope.Value?
+    var oldValue: Value?
+    var newValue: Value?
     var transaction: Transaction?
   }
 }
-
-extension ScopedObject where Scope: WrittableObjectScope {
-  var value: Scope.Value {
-    get {
-      guard let currentValue = self.currentValue else { fatalError() }
-      return currentValue
-    }
-    set {
-      guard let root = self.root else { return }
-      self.scope.set(newValue, on: root)
-    }
-  }
-}
-
-
-
-

@@ -1,4 +1,4 @@
-import Foundation
+import Combine
 import SwiftUI
 
 @propertyWrapper
@@ -14,11 +14,14 @@ public struct Dependency<Value> {
     fatalError()
   }
 
-  public static subscript<EnclosingSelf: AnyObject>(
+  public static subscript<EnclosingSelf>(
     _enclosingInstance object: EnclosingSelf,
     wrapped wrappedKeyPath: KeyPath<EnclosingSelf, Value>,
     storage storageKeyPath: KeyPath<EnclosingSelf, Dependency<Value>>
-  ) -> Value {
+  ) -> Value
+    where EnclosingSelf: ObservableObject,
+    EnclosingSelf.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
     let dependencies = Dependencies.for(object)
     let keyPath = object[keyPath: storageKeyPath].keyPath
     return dependencies[keyPath: keyPath]

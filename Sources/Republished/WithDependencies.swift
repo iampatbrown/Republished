@@ -8,7 +8,10 @@ public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () ->
 }
 
 @propertyWrapper
-public struct WithDependencies<ObjectType: AnyObject>: DynamicProperty {
+public struct WithDependencies<ObjectType>: DynamicProperty
+  where ObjectType: ObservableObject,
+  ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+{
   @State var storage: Storage
 
   public init(wrappedValue thunk: @autoclosure @escaping () -> ObjectType, _ dependencies: Dependencies) {

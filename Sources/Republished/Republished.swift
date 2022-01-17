@@ -8,21 +8,23 @@ public struct Republished<Value> {
   public init(
     wrappedValue: Value,
     inheritDependencies: Bool = true
-  ) where Value: ObservableObject {
+  ) where Value: ObservableObject, Value.ObjectWillChangePublisher == ObservableObjectPublisher {
     self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
   }
 
   public init<Wrapped>(
     wrappedValue: Wrapped?,
     inheritDependencies: Bool = true
-  ) where Wrapped? == Value, Wrapped: ObservableObject {
+  ) where Wrapped? == Value, Wrapped: ObservableObject, Wrapped.ObjectWillChangePublisher == ObservableObjectPublisher {
     self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
   }
 
   public init(
     wrappedValue: Value,
     inheritDependencies: Bool = true
-  ) where Value: Collection, Value.Element: ObservableObject {
+  ) where Value: Collection, Value.Element: ObservableObject,
+    Value.Element.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
     self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
   }
 
@@ -92,7 +94,9 @@ public struct Republished<Value> {
       didSet { self.republish(self.currentValue) }
     }
 
-    init(_ initialValue: Value, inheritDependencies: Bool) where Value: ObservableObject {
+    init(_ initialValue: Value, inheritDependencies: Bool) where Value: ObservableObject,
+      Value.ObjectWillChangePublisher == ObservableObjectPublisher
+    {
       self._currentValue = .init(wrappedValue: initialValue)
       self.subscribe = { $0.subscribe($1) }
       self.inheritDependencies = { inheritDependencies ? $0.inheritDependencies(from: $1) : nil }
@@ -100,7 +104,7 @@ public struct Republished<Value> {
     }
 
     init<Wrapped>(_ initialValue: Wrapped?, inheritDependencies: Bool) where Wrapped: ObservableObject,
-      Wrapped? == Value
+      Wrapped? == Value, Wrapped.ObjectWillChangePublisher == ObservableObjectPublisher
     {
       self._currentValue = .init(wrappedValue: initialValue)
       self.subscribe = { $0?.subscribe($1) }
@@ -108,7 +112,9 @@ public struct Republished<Value> {
       self.republish(initialValue)
     }
 
-    init(_ initialValue: Value, inheritDependencies: Bool) where Value: Collection, Value.Element: ObservableObject {
+    init(_ initialValue: Value, inheritDependencies: Bool) where Value: Collection, Value.Element: ObservableObject,
+      Value.Element.ObjectWillChangePublisher == ObservableObjectPublisher
+    {
       self._currentValue = .init(wrappedValue: initialValue)
       self.subscribe = { $0.subscribe($1) }
       self.inheritDependencies = { inheritDependencies ? $0.inheritDependencies(from: $1) : nil }
@@ -129,19 +135,19 @@ public struct Republished<Value> {
   }
 }
 
-extension ObservableObject {
+extension ObservableObject where ObjectWillChangePublisher == ObservableObjectPublisher {
   func subscribe<Value>(_ subject: Republished<Value>.Subject) -> AnyCancellable {
     self.objectWillChange.sink { [weak subject] _ in subject?.changePublisher?.send() }
   }
 
   func inheritDependencies<Value>(from subject: Republished<Value>.Subject) -> AnyCancellable {
     Dependencies.bindInheritance(self) {
-      [weak subject] in subject?.changePublisher.flatMap(Dependencies.id)
+      [weak subject] in subject?.changePublisher.flatMap(ObjectIdentifier.init)
     }
   }
 }
 
-extension Collection where Element: ObservableObject {
+extension Collection where Element: ObservableObject, Element.ObjectWillChangePublisher == ObservableObjectPublisher {
   func subscribe<Value>(_ subject: Republished<Value>.Subject) -> AnyCancellable {
     let cancellables = self.map { $0.subscribe(subject) }
     return AnyCancellable { _ = cancellables }
