@@ -1,7 +1,9 @@
 import SwiftUI
 
-extension EnvironmentValues: Sequence {
-  public struct Iterator: IteratorProtocol {
+struct EnvironmentValuesSquence: Sequence {
+  let values: EnvironmentValues
+
+  struct Iterator: IteratorProtocol {
     var current: Any?
 
     init(_ environment: EnvironmentValues) {
@@ -19,7 +21,7 @@ extension EnvironmentValues: Sequence {
     }
   }
 
-  public func makeIterator() -> Iterator { Iterator(self) }
+  func makeIterator() -> Iterator { Iterator(self.values) }
 }
 
 extension EnvironmentValues {
@@ -29,7 +31,9 @@ extension EnvironmentValues {
       return root
     }
     #endif
-    return self.first(where: { self.environmentKey(for: $0) == key })
+
+    return EnvironmentValuesSquence(values: self)
+      .first(where: { self.environmentKey(for: $0) == key })
       .flatMap { Mirror(reflecting: $0).descendant("value") as? T }
   }
 

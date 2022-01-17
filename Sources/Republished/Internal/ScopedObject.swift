@@ -2,7 +2,9 @@ import Combine
 import SwiftUI
 
 class ScopedObject<ObjectType, Value>: ObservableObject
-  where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+  where
+  ObjectType: ObservableObject,
+  ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   let keyPath: KeyPath<ObjectType, Value>
   var currentValue: Value?
