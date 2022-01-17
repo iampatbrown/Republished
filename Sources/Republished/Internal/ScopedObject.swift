@@ -27,6 +27,12 @@ class ScopedObject<ObjectType, Value>: ObservableObject
     }
   }
 
+  convenience init(
+    _ keyPath: KeyPath<ObjectType, Value>
+  ) where Value: Equatable {
+    self.init(keyPath, removeDuplicates: ==)
+  }
+
   init(
     _ keyPath: KeyPath<ObjectType, Value>
   )
@@ -86,8 +92,16 @@ class ScopedObject<ObjectType, Value>: ObservableObject
   }
 
   var value: Value {
-    guard let currentValue = self.currentValue else { fatalError() }
-    return currentValue
+    get {
+      guard let currentValue = self.currentValue else { fatalError() }
+      return currentValue
+    }
+    set {
+      // TODO: probably a better way to do this. Not really using it atm though. Just testing.
+      if let keyPath = self.keyPath as? ReferenceWritableKeyPath<ObjectType, Value> {
+        self.root?[keyPath: keyPath] = newValue
+      }
+    }
   }
 
   private var rootValue: Value? { self.root?[keyPath: self.keyPath] }
@@ -128,7 +142,12 @@ class ScopedObject<ObjectType, Value>: ObservableObject
   func synchronize(with root: ObjectType) {
     guard self.root !== root else { return }
     self.root = root
-    self.currentValue = root[keyPath: self.keyPath]
+    let newValue = root[keyPath: self.keyPath]
+    if let currentValue = self.currentValue, !self.isDuplicate(currentValue, newValue) {
+      self.objectWillChange.send()
+    }
+    self.currentValue = newValue
+
     self.cancellable = nil
 
     let changeCancellable = self.subscribe(to: root)

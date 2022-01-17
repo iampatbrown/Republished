@@ -36,6 +36,10 @@ public struct ScopedBinding<ObjectType, Value>: DynamicProperty
     self._scoped = .init(wrappedValue: .init(keyPath))
   }
 
+  public init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>) where Value: Equatable {
+    self.init(keyPath, removeDuplicates: ==)
+  }
+
   public init<Wrapped>(
     _ keyPath: ReferenceWritableKeyPath<ObjectType, Wrapped?>
   ) where
@@ -72,13 +76,5 @@ public struct ScopedBinding<ObjectType, Value>: DynamicProperty
   /// Updates the underlying value of the stored value.
   public func update() {
     self.scoped.synchronize(with: self.root)
-  }
-}
-
-extension ScopedBinding where Value: Equatable {
-  /// Creates a binding to the specified environment object keyPath.
-  /// - Parameter keyPath: A writable key path to a value on an environment object.
-  public init(_ keyPath: ReferenceWritableKeyPath<ObjectType, Value>) {
-    self.init(keyPath, removeDuplicates: ==)
   }
 }

@@ -1,7 +1,6 @@
 import Combine
 import SwiftUI
 
-
 /// A collection of dependencies propagated through `@Republished` `ObservableObject`s
 ///
 /// Description
@@ -36,13 +35,17 @@ public struct Dependencies {
 
 extension Dependencies {
   @ThreadSafe private static var store: [ObjectIdentifier: Dependencies] = [:]
-  @ThreadSafe private static var inheritanceRelationships: [ObjectIdentifier: () -> ObjectIdentifier?] = [:]
+  @ThreadSafe private static var inheritanceRelationships: [
+    ObjectIdentifier: ()
+      -> ObjectIdentifier?
+  ] = [:]
 
   static func bind<ObjectType>(
     _ dependencies: Dependencies,
     to object: ObjectType
   ) -> AnyCancellable
-    where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+    where ObjectType: ObservableObject,
+    ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     let id = ObjectIdentifier(object.objectWillChange)
     Self.store[id] = dependencies
@@ -55,7 +58,8 @@ extension Dependencies {
     _ object: ObjectType,
     parentId: @escaping () -> ObjectIdentifier?
   ) -> AnyCancellable
-    where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+    where ObjectType: ObservableObject,
+    ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     let id = ObjectIdentifier(object.objectWillChange)
     Self.inheritanceRelationships[id] = parentId
@@ -73,7 +77,8 @@ extension Dependencies {
   }
 
   static func `for`<ObjectType>(_ object: ObjectType) -> Dependencies
-    where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+    where ObjectType: ObservableObject,
+    ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     let id = ObjectIdentifier(object.objectWillChange)
     if var dependencies = Self.inheritedDependencies(for: id) ?? Self.store[id] {

@@ -19,7 +19,8 @@ private class Counter: ObservableObject {
   func intReturnString(_ n: Int) -> String { "Blob" }
   func intReturnIntString(_ n: Int) -> (Int, String) { (42, "Blob") }
   func intStringReturnString(_ n: Int, _ string: String) -> String { "Blob" }
-  func intStringDoubleReturnIntString(_ n: Int, _ string: String, _ double: Double) -> (Int, String) { (42, "Blob") }
+  func intStringDoubleReturnIntString(_ n: Int, _ string: String,
+                                      _ double: Double) -> (Int, String) { (42, "Blob") }
 }
 
 final class ActionTests: XCTestCase {
@@ -29,33 +30,42 @@ final class ActionTests: XCTestCase {
     let counter = Counter()
 
     withMockEnvironmentObjects(counter) {
-      @Action(Counter.increment) var incrementCounter: () -> Void
+      @Action(Counter.increment)
+      var incrementCounter: () -> Void
       incrementCounter()
       XCTAssertEqual(counter.value, 1)
 
-      @Action(Counter.decrement) var decrementCounter: () -> Void
+      @Action(Counter.decrement)
+      var decrementCounter: () -> Void
       decrementCounter()
       XCTAssertEqual(counter.value, 0)
 
-      @Action(Counter.voidReturnInt) var voidReturnInt: () -> Int
+      @Action(Counter.voidReturnInt)
+      var voidReturnInt: () -> Int
       XCTAssertEqual(voidReturnInt(), 42)
 
-      @Action(Counter.voidReturnIntString) var voidReturnIntString: () -> (Int, String)
+      @Action(Counter.voidReturnIntString)
+      var voidReturnIntString: () -> (Int, String)
       XCTAssertTrue(voidReturnIntString() == (42, "Blob"))
 
-      @Action(Counter.intReturnVoid) var intReturnVoid: (Int) -> Void
+      @Action(Counter.intReturnVoid)
+      var intReturnVoid: (Int) -> Void
       XCTAssertTrue(intReturnVoid(42) == ())
 
-      @Action(Counter.intReturnString) var intReturnString: (Int) -> String
+      @Action(Counter.intReturnString)
+      var intReturnString: (Int) -> String
       XCTAssertEqual(intReturnString(42), "Blob")
 
-      @Action(Counter.intReturnIntString) var intReturnIntString: (Int) -> (Int, String)
+      @Action(Counter.intReturnIntString)
+      var intReturnIntString: (Int) -> (Int, String)
       XCTAssertTrue(intReturnIntString(42) == (42, "Blob"))
 
-      @Action(Counter.intStringReturnString) var intStringReturnString: (Int, String) -> String
+      @Action(Counter.intStringReturnString)
+      var intStringReturnString: (Int, String) -> String
       XCTAssertEqual(intStringReturnString(42, "Blob"), "Blob")
 
-      @Action(Counter.intStringDoubleReturnIntString) var intStringDoubleReturnIntString: (Int, String, Double) -> (Int, String)
+      @Action(Counter.intStringDoubleReturnIntString)
+      var intStringDoubleReturnIntString: (Int, String, Double) -> (Int, String)
       XCTAssertTrue(intStringDoubleReturnIntString(42, "Blob", 42.0) == (42, "Blob"))
     }
   }

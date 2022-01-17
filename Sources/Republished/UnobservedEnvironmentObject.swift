@@ -8,24 +8,11 @@ import SwiftUI
 @propertyWrapper
 public struct UnobservedEnvironmentObject<ObjectType>: DynamicProperty
 where ObjectType: ObservableObject {
+  @Environment(unobserved: ObjectType.self) private var object: ObjectType?
+
   /// The underlying value referenced by the unobserved environment  object.
-  @Environment(unobserved: ObjectType.self) public var wrappedValue
-
-  /// Creates an unobserved environment object.
-  public init() {}
-}
-
-extension Environment {
-  init(unobserved object: Value.Type) where Value: ObservableObject {
-    self.init(\.[\Value.self])
-  }
-}
-
-extension EnvironmentValues {
-  subscript<ObjectType>(
-    keyPath: KeyPath<ObjectType, ObjectType>
-  ) -> ObjectType where ObjectType: ObservableObject {
-    guard let object = self.extract(key: "StoreKey<\(ObjectType.self)>", as: ObjectType.self) else {
+  public var wrappedValue: ObjectType {
+    guard let object = object else {
       fatalError(
         """
         No ObservableObject of type \(ObjectType.self) found. \
@@ -35,5 +22,27 @@ extension EnvironmentValues {
       )
     }
     return object
+  }
+
+  /// Creates an unobserved environment object.
+  public init() {}
+}
+
+extension Environment {
+  init<Wrapped>(unobserved object: Wrapped.Type) where Wrapped? == Value,
+    Wrapped: ObservableObject
+  {
+    self.init(\.[\Wrapped.self])
+  }
+}
+
+extension EnvironmentValues {
+  subscript<ObjectType>(
+    keyPath: KeyPath<ObjectType, ObjectType>
+  ) -> ObjectType? where ObjectType: ObservableObject {
+    return self.extract(
+      key: "StoreKey<\(ObjectType.self)>",
+      as: ObjectType.self
+    )
   }
 }

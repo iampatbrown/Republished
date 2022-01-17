@@ -27,7 +27,12 @@ public struct ScopedValue<ObjectType, Value>: DynamicProperty
     self._scoped = .init(wrappedValue: .init(keyPath, removeDuplicates: isDuplicate))
   }
 
- 
+  /// Creates a scoped value to the specified environment object keyPath.
+  /// - Parameter keyPath: A key path to a value on an environment object.
+  public init(_ keyPath: KeyPath<ObjectType, Value>) where Value: Equatable {
+    self.init(keyPath, removeDuplicates: ==)
+  }
+
   public init(
     _ keyPath: KeyPath<ObjectType, Value>
   ) where Value: ObservableObject, Value.ObjectWillChangePublisher == ObservableObjectPublisher {
@@ -62,13 +67,5 @@ public struct ScopedValue<ObjectType, Value>: DynamicProperty
   /// Updates the underlying value of the stored value.
   public func update() {
     self.scoped.synchronize(with: self.root)
-  }
-}
-
-extension ScopedValue where Value: Equatable {
-  /// Creates a scoped value to the specified environment object keyPath.
-  /// - Parameter keyPath: A key path to a value on an environment object.
-  public init(_ keyPath: KeyPath<ObjectType, Value>) where Value: Equatable {
-    self.init(keyPath, removeDuplicates: ==)
   }
 }
