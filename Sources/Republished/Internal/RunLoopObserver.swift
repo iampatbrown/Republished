@@ -1,9 +1,10 @@
 import Foundation
 
+// TODO: Maybe make this a Publisher
 class RunLoopObserver {
-  let runLoop: CFRunLoop
-  let mode: CFRunLoopMode
-  let observer: CFRunLoopObserver
+  private let runLoop: CFRunLoop
+  private let mode: CFRunLoopMode
+  private let observer: CFRunLoopObserver
 
   init(
     runLoop: CFRunLoop = CFRunLoopGetMain(),

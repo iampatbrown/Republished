@@ -6,16 +6,82 @@ class ScopedObject<ObjectType, Value>: ObservableObject
   ObjectType: ObservableObject,
   ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
-  let keyPath: KeyPath<ObjectType, Value>
-  var currentValue: Value?
-  var pendingEvents: [RootEvent] = []
-  var cancellable: AnyCancellable?
-  let isDuplicate: (Value, Value) -> Bool
+  private weak var root: ObjectType?
+  private let keyPath: KeyPath<ObjectType, Value>
+  private var currentValue: Value?
+  private var cancellable: AnyCancellable?
 
-  weak var root: ObjectType? {
-    didSet {
-      guard oldValue !== root, let root = root else { return }
-      self.synchronize(with: root)
+  private var pendingChanges: [Change] = []
+  private let isDuplicate: (Value, Value) -> Bool
+
+  private let subscribe: (ScopedObject, ObjectType) -> AnyCancellable?
+
+  init(
+    _ keyPath: KeyPath<ObjectType, Value>,
+    removeDuplicates isDuplicate: @escaping (Value, Value) -> Bool
+  ) {
+    self.keyPath = keyPath
+    self.isDuplicate = isDuplicate
+    self.subscribe = { scoped, root in
+      root.objectWillChange.sink { [weak scoped] _ in scoped?.enqueueChange() }
+    }
+  }
+
+  init(
+    _ keyPath: KeyPath<ObjectType, Value>
+  )
+    where Value: ObservableObject,
+    Value.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    self.keyPath = keyPath
+    self.isDuplicate = { $0 === $1 }
+    self.subscribe = { scoped, root in
+      let rootCancellable = root.objectWillChange.sink { [weak scoped] _ in
+        scoped?.enqueueChange()
+      }
+      let objectCancellable = root[keyPath: keyPath].objectWillChange.sink { [weak scoped] _ in
+        scoped?.objectWillChange.send()
+      }
+      return AnyCancellable { _ = (rootCancellable, objectCancellable) }
+    }
+  }
+
+  init<Wrapped>(_ keyPath: KeyPath<ObjectType, Wrapped?>)
+    where
+    Wrapped? == Value,
+    Wrapped: ObservableObject,
+    Wrapped.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    self.keyPath = keyPath
+    self.isDuplicate = { $0 === $1 }
+    self.subscribe = { scoped, root in
+      let rootCancellable = root.objectWillChange.sink { [weak scoped] _ in
+        scoped?.enqueueChange()
+      }
+      let objectCancellable = root[keyPath: keyPath]?.objectWillChange.sink { [weak scoped] _ in
+        scoped?.objectWillChange.send()
+      }
+      return AnyCancellable { _ = (rootCancellable, objectCancellable) }
+    }
+  }
+
+  init(_ keyPath: KeyPath<ObjectType, Value>)
+    where
+    Value: Collection,
+    Value.Element: ObservableObject,
+    Value.Element.ObjectWillChangePublisher == ObservableObjectPublisher
+  {
+    self.keyPath = keyPath
+    self.isDuplicate = { $0.count == $1.count && zip($0, $1).allSatisfy { $0.0 === $0.1 } }
+    self.subscribe = { scoped, root in
+      let rootCancellable = root.objectWillChange.sink { [weak scoped] _ in
+        scoped?.enqueueChange()
+      }
+      let objectCancellables = root[keyPath: keyPath]
+        .map { $0.objectWillChange.sink { [weak scoped] _ in
+          scoped?.objectWillChange.send()
+        } }
+      return AnyCancellable { _ = (rootCancellable, objectCancellables) }
     }
   }
 
@@ -24,68 +90,58 @@ class ScopedObject<ObjectType, Value>: ObservableObject
     return currentValue
   }
 
-  init(_ keyPath: KeyPath<ObjectType, Value>, isDuplicate: @escaping (Value, Value) -> Bool) {
-    self.keyPath = keyPath
-    self.isDuplicate = isDuplicate
+  private var rootValue: Value? { self.root?[keyPath: self.keyPath] }
+
+  private func enqueueChange() {
+    let change = Change(oldRootValue: self.rootValue, transcation: Transaction.current)
+    self.pendingChanges.append(change)
   }
 
-  init(_ keyPath: KeyPath<ObjectType, Value>) where Value: Equatable {
-    self.keyPath = keyPath
-    self.isDuplicate = { $0 == $1 }
+  private func applyPendingChanges() {
+    while !self.pendingChanges.isEmpty {
+      let change = self.pendingChanges.removeFirst()
+      guard
+        let oldValue = self.currentValue,
+        let newValue = self.pendingChanges.first?.oldRootValue ?? self.rootValue,
+        !self.isDuplicate(oldValue, newValue)
+      else { continue }
+      self.send(newValue, transaction: change.transcation)
+    }
   }
 
-  func apply(_ event: RootEvent) {
-    guard
-      let oldValue = self.currentValue,
-      let newValue = event.newValue,
-      !self.isDuplicate(oldValue, newValue)
-    else { return }
-
-    if let transaction = event.transaction {
+  private func send(_ value: Value, transaction: SwiftUI.Transaction?) {
+    if let transaction = transaction {
       withTransaction(transaction) {
         self.objectWillChange.send()
-        self.currentValue = newValue
+        self.currentValue = value
       }
     } else {
       self.objectWillChange.send()
-      self.currentValue = newValue
+      self.currentValue = value
     }
+  }
+
+  func subscribe(to root: ObjectType) -> AnyCancellable? {
+    self.subscribe(self, root)
   }
 
   func synchronize(with root: ObjectType) {
+    guard self.root !== root else { return }
+    self.root = root
     self.currentValue = root[keyPath: self.keyPath]
     self.cancellable = nil
 
-    let runLoopObserver = RunLoopObserver { [weak self] in
-      guard let self = self else { return }
-      while !self.pendingEvents.isEmpty {
-        var event = self.pendingEvents.removeFirst()
-        if let next = self.pendingEvents.first {
-          event.newValue = next.oldValue
-        } else {
-          event.newValue = self.root?[keyPath: self.keyPath]
-        }
-        self.apply(event)
-      }
-    }
+    let changeCancellable = self.subscribe(to: root)
 
-    let cancellable = root.objectWillChange.sink { [weak self] _ in
-      guard let self = self else { return }
-      let event = RootEvent(
-        oldValue: self.root?[keyPath: self.keyPath],
-        transaction: Transaction.current
-      )
-      self.pendingEvents.append(event)
-    }
+    let runLoopObserver = RunLoopObserver { [weak self] in self?.applyPendingChanges() }
 
     self.cancellable = AnyCancellable {
-      _ = (cancellable, runLoopObserver)
+      _ = (changeCancellable, runLoopObserver)
     }
   }
 
-  struct RootEvent {
-    var oldValue: Value?
-    var newValue: Value?
-    var transaction: Transaction?
+  struct Change {
+    var oldRootValue: Value?
+    var transcation: Transaction?
   }
 }

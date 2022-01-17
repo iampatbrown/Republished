@@ -19,12 +19,16 @@ public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () ->
 /// Example
 @propertyWrapper
 public struct WithDependencies<ObjectType>: DynamicProperty
-  where ObjectType: ObservableObject,
+  where
+  ObjectType: ObservableObject,
   ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   @State var storage: Storage
 
-  public init(wrappedValue thunk: @autoclosure @escaping () -> ObjectType, _ dependencies: Dependencies) {
+  public init(
+    wrappedValue thunk: @autoclosure @escaping () -> ObjectType,
+    _ dependencies: Dependencies
+  ) {
     self._storage = State(wrappedValue: Storage(state: .initially(thunk, dependencies)))
   }
 

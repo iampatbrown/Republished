@@ -13,7 +13,9 @@ public struct Republished<Value> {
   public init(
     wrappedValue: Value,
     inheritDependencies: Bool = true
-  ) where Value: ObservableObject,
+  )
+    where
+    Value: ObservableObject,
     Value.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
@@ -22,7 +24,9 @@ public struct Republished<Value> {
   public init<Wrapped>(
     wrappedValue: Wrapped?,
     inheritDependencies: Bool = true
-  ) where Wrapped? == Value, Wrapped: ObservableObject,
+  ) where
+    Wrapped? == Value,
+    Wrapped: ObservableObject,
     Wrapped.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
@@ -31,7 +35,9 @@ public struct Republished<Value> {
   public init(
     wrappedValue: Value,
     inheritDependencies: Bool = true
-  ) where Value: Collection, Value.Element: ObservableObject,
+  ) where
+    Value: Collection,
+    Value.Element: ObservableObject,
     Value.Element.ObjectWillChangePublisher == ObservableObjectPublisher
   {
     self.subject = .init(wrappedValue, inheritDependencies: inheritDependencies)
@@ -159,7 +165,6 @@ public struct Republished<Value> {
     }
 
     func republish(_ value: Value) {
-      // TODO: Double check if this needs to be set to nil before subscribing...
       self.cancellable = nil
       let changeCancellable = self.subscribe(value, self)
       let dependenciesCancellable = self.inheritDependencies(value, self)

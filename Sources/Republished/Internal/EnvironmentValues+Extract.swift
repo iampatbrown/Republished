@@ -1,29 +1,5 @@
 import SwiftUI
 
-struct EnvironmentValuesSquence: Sequence {
-  let values: EnvironmentValues
-
-  struct Iterator: IteratorProtocol {
-    var current: Any?
-
-    init(_ environment: EnvironmentValues) {
-      let mirror = Mirror(reflecting: environment)
-      self.current = mirror.descendant("_plist", "elements", "some") ?? mirror.descendant("plist", "elements", "some")
-    }
-
-    public mutating func next() -> Any? {
-      guard let value = self.current else { return nil }
-      defer {
-        let linkedListNode = Mirror(reflecting: value).superclassMirror
-        self.current = linkedListNode?.descendant("after", "some")
-      }
-      return value
-    }
-  }
-
-  func makeIterator() -> Iterator { Iterator(self.values) }
-}
-
 extension EnvironmentValues {
   func extract<T>(key: String, as type: T.Type) -> T? {
     #if DEBUG
@@ -58,3 +34,28 @@ extension EnvironmentValues {
   @ThreadSafe fileprivate static var mockObjects = Stack<String, Any>()
 }
 #endif
+
+struct EnvironmentValuesSquence: Sequence {
+  let values: EnvironmentValues
+
+  struct Iterator: IteratorProtocol {
+    var current: Any?
+
+    init(_ environment: EnvironmentValues) {
+      let mirror = Mirror(reflecting: environment)
+      self.current = mirror.descendant("_plist", "elements", "some")
+        ?? mirror.descendant("plist", "elements", "some")
+    }
+
+    mutating func next() -> Any? {
+      guard let value = self.current else { return nil }
+      defer {
+        let linkedListNode = Mirror(reflecting: value).superclassMirror
+        self.current = linkedListNode?.descendant("after", "some")
+      }
+      return value
+    }
+  }
+
+  func makeIterator() -> Iterator { Iterator(self.values) }
+}

@@ -1,7 +1,6 @@
 import Combine
 import SwiftUI
 
-
 @propertyWrapper
 /// A property wrapper type that for a function on an environment object.
 ///

@@ -14,12 +14,12 @@ class ThreadSafe<Value> {
   private var value: Value
   private let lock = NSRecursiveLock()
 
-  public init(wrappedValue value: Value) {
+  init(wrappedValue value: Value) {
     self.value = value
   }
 
-  public var wrappedValue: Value {
-    get { return self.lock.sync { return self.value } }
+  var wrappedValue: Value {
+    get { self.lock.sync { self.value } }
     set { self.lock.sync { self.value = newValue } }
   }
 }

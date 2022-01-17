@@ -76,17 +76,18 @@ public func synchronize<Value>(
   return AnyCancellable { _ = (relay, c0, c1, c2, c3, c4) }
 }
 
-class SynchronizingRelay<Value> {
-  let subject = PassthroughSubject<Value, Never>()
-  var currentSender: CombineIdentifier?
+private class SynchronizingRelay<Value> {
+  private let subject = PassthroughSubject<Value, Never>()
+  private var currentSender: CombineIdentifier?
 
-  func send(_ value: Value) {
+  private func send(_ value: Value) {
     self.subject.send(value)
   }
 
   func synchronize(with publisher: inout Published<Value>.Publisher) -> AnyCancellable {
     let id = CombineIdentifier()
-    self.subject.filter { [weak self] _ in self.map { $0.currentSender != id } ?? false }.assign(to: &publisher)
+    self.subject.filter { [weak self] _ in self.map { $0.currentSender != id } ?? false }
+      .assign(to: &publisher)
     return publisher.sink { [weak self] newValue in
       guard let self = self, self.currentSender == nil else { return }
       self.currentSender = id

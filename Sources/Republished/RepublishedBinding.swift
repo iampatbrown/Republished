@@ -7,8 +7,10 @@ import SwiftUI
 ///
 /// Example
 @propertyWrapper
-public struct PublishedBinding<ObjectType, Value>: DynamicProperty
-  where ObjectType: ObservableObject, ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
+public struct RepublishedBinding<ObjectType, Value>: DynamicProperty
+  where
+  ObjectType: ObservableObject,
+  ObjectType.ObjectWillChangePublisher == ObservableObjectPublisher
 {
   @UnobservedEnvironmentObject var root: ObjectType
   @StateObject var subject: Subject
@@ -78,7 +80,7 @@ public struct PublishedBinding<ObjectType, Value>: DynamicProperty
   }
 }
 
-extension PublishedBinding.Subject {
+extension RepublishedBinding.Subject {
   func synchronize(with publisher: inout Published<Value>.Publisher) {
     _ = publisher.sink { self.currentValue = $0 }
     self.cancellable = nil
