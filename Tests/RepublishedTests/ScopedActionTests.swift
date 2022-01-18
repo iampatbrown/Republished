@@ -30,41 +30,41 @@ final class ActionTests: XCTestCase {
     let counter = Counter()
 
     withMockEnvironmentObjects(counter) {
-      @Action(Counter.increment)
+      @ScopedAction(Counter.increment)
       var incrementCounter: () -> Void
       incrementCounter()
       XCTAssertEqual(counter.value, 1)
 
-      @Action(Counter.decrement)
+      @ScopedAction(Counter.decrement)
       var decrementCounter: () -> Void
       decrementCounter()
       XCTAssertEqual(counter.value, 0)
 
-      @Action(Counter.voidReturnInt)
+      @ScopedAction(Counter.voidReturnInt)
       var voidReturnInt: () -> Int
       XCTAssertEqual(voidReturnInt(), 42)
 
-      @Action(Counter.voidReturnIntString)
+      @ScopedAction(Counter.voidReturnIntString)
       var voidReturnIntString: () -> (Int, String)
       XCTAssertTrue(voidReturnIntString() == (42, "Blob"))
 
-      @Action(Counter.intReturnVoid)
+      @ScopedAction(Counter.intReturnVoid)
       var intReturnVoid: (Int) -> Void
       XCTAssertTrue(intReturnVoid(42) == ())
 
-      @Action(Counter.intReturnString)
+      @ScopedAction(Counter.intReturnString)
       var intReturnString: (Int) -> String
       XCTAssertEqual(intReturnString(42), "Blob")
 
-      @Action(Counter.intReturnIntString)
+      @ScopedAction(Counter.intReturnIntString)
       var intReturnIntString: (Int) -> (Int, String)
       XCTAssertTrue(intReturnIntString(42) == (42, "Blob"))
 
-      @Action(Counter.intStringReturnString)
+      @ScopedAction(Counter.intStringReturnString)
       var intStringReturnString: (Int, String) -> String
       XCTAssertEqual(intStringReturnString(42, "Blob"), "Blob")
 
-      @Action(Counter.intStringDoubleReturnIntString)
+      @ScopedAction(Counter.intStringDoubleReturnIntString)
       var intStringDoubleReturnIntString: (Int, String, Double) -> (Int, String)
       XCTAssertTrue(intStringDoubleReturnIntString(42, "Blob", 42.0) == (42, "Blob"))
     }

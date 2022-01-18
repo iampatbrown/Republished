@@ -242,8 +242,8 @@ struct AppView: View {
   @ScopedValue(\AppViewModel.counters) var counters
   @ScopedValue(\AppViewModel.factPrompt) var factPrompt
   @ScopedValue(\AppViewModel.sum) var sum
-  @Action(AppViewModel.addButtonTapped) var addButtonTapped
-  @Action(AppViewModel.dismissFactPrompt) var dismissFactPrompt
+  @ScopedAction(AppViewModel.addButtonTapped) var addButtonTapped
+  @ScopedAction(AppViewModel.dismissFactPrompt) var dismissFactPrompt
 
   var body: some View {
     Self._printChanges()

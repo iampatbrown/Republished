@@ -7,7 +7,7 @@ import SwiftUI
 /// Does not observe changes
 ///
 /// Example
-public struct Action<ObjectType, Value>: DynamicProperty
+public struct ScopedAction<ObjectType, Value>: DynamicProperty
   where ObjectType: ObservableObject
 {
   @UnobservedEnvironmentObject var root: ObjectType
