@@ -1,16 +1,12 @@
 import SwiftUI
 
-/// A property wrapper type for accessing an environment object without observing changes.
-///
-/// Description
-///
-/// Example
+
 @propertyWrapper
 public struct UnobservedEnvironmentObject<ObjectType>: DynamicProperty
 where ObjectType: ObservableObject {
   @Environment(unobserved: ObjectType.self) private var object: ObjectType?
 
-  /// The underlying value referenced by the unobserved environment  object.
+
   public var wrappedValue: ObjectType {
     guard let object = object else {
       fatalError(
@@ -24,7 +20,7 @@ where ObjectType: ObservableObject {
     return object
   }
 
-  /// Creates an unobserved environment object.
+
   public init() {}
 }
 

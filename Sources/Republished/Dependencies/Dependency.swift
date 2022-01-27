@@ -1,11 +1,7 @@
 import Combine
 import SwiftUI
 
-/// A property wrapper that can read dependencies from enclosing `ObservableObject`s
-///
-/// Description
-///
-/// Example
+
 @propertyWrapper
 public struct Dependency<Value> {
   let keyPath: WritableKeyPath<Dependencies, Value>

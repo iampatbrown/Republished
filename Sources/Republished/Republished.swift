@@ -1,11 +1,7 @@
 import Combine
 import SwiftUI
 
-/// A property wrapper type for nesting `ObservableObject`s
-///
-/// Description
-///
-/// Example
+
 @propertyWrapper
 public struct Republished<Value> {
   let subject: Subject
@@ -118,6 +114,25 @@ public struct Republished<Value> {
       didSet { self.republish(self.currentValue) }
     }
 
+
+    func receive<S>(subscriber: S) where S: Subscriber, Never == S.Failure,
+      Output == S.Input
+    {
+      self.$currentValue.subscribe(subscriber)
+    }
+
+    func republish(_ value: Value) {
+      self.cancellable = nil
+      let changeCancellable = self.subscribe(value, self)
+      let dependenciesCancellable = self.inheritDependencies(value, self)
+      self
+        .cancellable = AnyCancellable {
+          _ = (changeCancellable, dependenciesCancellable)
+        }
+    }
+    
+    
+    
     init(_ initialValue: Value, inheritDependencies: Bool)
       where Value: ObservableObject,
       Value.ObjectWillChangePublisher == ObservableObjectPublisher
@@ -156,22 +171,6 @@ public struct Republished<Value> {
           inheritDependencies ? $0.inheritDependencies(from: $1) : nil
         }
       self.republish(initialValue)
-    }
-
-    func receive<S>(subscriber: S) where S: Subscriber, Never == S.Failure,
-      Output == S.Input
-    {
-      self.$currentValue.subscribe(subscriber)
-    }
-
-    func republish(_ value: Value) {
-      self.cancellable = nil
-      let changeCancellable = self.subscribe(value, self)
-      let dependenciesCancellable = self.inheritDependencies(value, self)
-      self
-        .cancellable = AnyCancellable {
-          _ = (changeCancellable, dependenciesCancellable)
-        }
     }
   }
 }
@@ -214,11 +213,21 @@ extension Collection where Element: ObservableObject,
 }
 
 extension Publisher where Failure == Never {
-  /// Republishes elements received from a publisher, by assigning them to a property marked as a publisher.
-  ///
-  /// - Parameter republished: A property marked with the @Published attribute, which receives and republishes all elements
-  /// received from the upstream publisher.
   public func assign(to republished: inout Republished<Output>.Publisher) {
     self.assign(to: &republished.subject.$currentValue)
   }
 }
+
+
+
+//private class RepublishedSubject<Output>: Publisher {
+//  typealias Failure = Never
+//
+//  weak var rootObjectWillChange: ObservableObjectPublisher?
+//
+//  @Published var value: Output {
+//    willSet { self.rootObjectWillChange?.send() }
+//  }
+//
+//
+//}

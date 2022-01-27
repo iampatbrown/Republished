@@ -64,6 +64,134 @@ There are multiple approach to observing changes to nested observable objects. T
 
 ## Tools
 
+#### Republished
+
+A type that republishes changes of observable objects:
+
+```swift
+class AppModel: ObservableObject {
+  @Republished var counter = CounterModel()
+}
+```
+
+also works with optional observable objects and collections of observable objects:
+
+```swift
+class AppModel: ObservableObject {
+  @Republished var optionalCounter: CounterModel?
+
+  @Republished var counters: [CounterModel] = [
+    CounterModel(),
+    CounterModel(),
+  ]
+}
+```
+
+Republished objects with properties using the `@Dependency` attribute automatically inherit dependencies from their parent. This can be disabled like so:
+
+```swift
+class AppModel: ObservableObject {
+  @Republished(inheritDependencies: false) var counter = CounterModel()
+}
+```
+
+#### synchronize(\_:\_:)
+
+Synchronizes published properties:
+
+```swift
+class AppModel: ObservableObject {
+  let first: CounterModel
+  let second: CounterModel
+
+  @Published var value = 0
+
+  var cancellable: AnyCancellable?
+
+  init(first: CounterModel, second: CounterModel) {
+    self.first = first
+    self.second = second
+    
+    self.cancellable = synchronize(
+      &first.$value,
+      &second.$value,
+      &self.$value
+    )
+  }
+}
+```
+
+#### ScopedValue
+
+A property wrapper type for observing a property on an environment object supplied by a parent or ancestor view.
+
+```swift
+struct CountView: View {
+  @ScopedValue(\CounterModel.value) var count
+  
+  var body: some View {
+    Text("Count: \(self.count)")
+  }
+}
+```
+
+#### ScopedBinding
+
+A property wrapper type that can read and write a value on an environment object supplied by a parent or ancestor view.
+
+```swift
+struct CounterView: View {
+  @ScopedBinding(\CounterModel.value) var count
+
+  var body: some View {
+    HStack {
+      Button("-") { self.count -= 1 }
+      Text("\(self.count)")
+      Button("+") { self.count += 1 }
+    }
+  }
+}
+```
+
+#### ScopedAction
+
+A property wrapper type that can call a function on an environment object supplied by a parent or ancestor view.
+
+```swift
+struct CounterView: View {
+  @ScopedValue(\CounterModel.value) var count
+  @ScopedAction(CounterModel.decrement) var decrementCount
+  @ScopedAction(CounterModel.increment) var incrementCount
+
+  var body: some View {
+    HStack {
+      Button("-") { self.decrementCount() }
+      Text("\(self.count)")
+      Button("+") { self.incrementCount() }
+    }
+  }
+}
+```
+
+#### UnobservedEnvironmentObject
+
+A property wrapper type for accessing an object supplied by a parent or ancestor view without observing changes.
+
+```swift
+struct CounterView: View {
+  @ScopedValue(\CounterModel.value) var count
+  @UnobservedEnvironmentObject var counter: CounterModel
+
+  var body: some View {
+    HStack {
+      Button("-") { self.counter.decrement() }
+      Text("\(self.count)")
+      Button("+") { self.counter.increment() }
+    }
+  }
+}
+```
+
 ## Examples
 
 ## Installation

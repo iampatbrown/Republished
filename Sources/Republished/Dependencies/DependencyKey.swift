@@ -1,6 +1,6 @@
 import Foundation
 
-/// A key for accessing values in the depenecies.
+
 public protocol DependencyKey {
   associatedtype Value
   static var defaultValue: Value { get }

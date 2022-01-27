@@ -1,11 +1,7 @@
 import Combine
 import SwiftUI
 
-/// A collection of dependencies propagated through `@Republished` `ObservableObject`s
-///
-/// Description
-///
-/// Example
+
 public struct Dependencies {
   private var stack = Stack<ObjectIdentifier, Any>()
 

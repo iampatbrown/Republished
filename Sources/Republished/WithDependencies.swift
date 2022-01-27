@@ -1,22 +1,14 @@
 import Combine
 import SwiftUI
 
-/// Executes a closure with the specified dependencies and returns the result.
-///
-/// Description
-///
-/// Example
+
 public func withDependencies<Result>(_ dependencies: Dependencies, _ body: () -> Result) -> Result {
   Dependencies.shared.push(dependencies)
   defer { Dependencies.shared.popLast() }
   return body()
 }
 
-/// A property wrapper type for injects dependencies into an `ObservableObject`
-///
-/// Description
-///
-/// Example
+
 @propertyWrapper
 public struct WithDependencies<ObjectType>: DynamicProperty
   where

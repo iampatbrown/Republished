@@ -1,10 +1,6 @@
 import Combine
 
-/// Synchronizes two `@Published` values
-///
-/// Description
-///
-/// Example
+
 public func synchronize<Value>(
   _ p0: inout Published<Value>.Publisher,
   _ p1: inout Published<Value>.Publisher
@@ -16,11 +12,7 @@ public func synchronize<Value>(
   return AnyCancellable { _ = (relay, c0, c1) }
 }
 
-/// Synchronizes three `@Published` values
-///
-/// Description
-///
-/// Example
+
 public func synchronize<Value>(
   _ p0: inout Published<Value>.Publisher,
   _ p1: inout Published<Value>.Publisher,
@@ -34,11 +26,6 @@ public func synchronize<Value>(
   return AnyCancellable { _ = (relay, c0, c1, c2) }
 }
 
-/// Synchronizes four `@Published` values
-///
-/// Description
-///
-/// Example
 public func synchronize<Value>(
   _ p0: inout Published<Value>.Publisher,
   _ p1: inout Published<Value>.Publisher,
@@ -54,11 +41,7 @@ public func synchronize<Value>(
   return AnyCancellable { _ = (relay, c0, c1, c2, c3) }
 }
 
-/// Synchronizes five `@Published` values
-///
-/// Description
-///
-/// Example
+
 public func synchronize<Value>(
   _ p0: inout Published<Value>.Publisher,
   _ p1: inout Published<Value>.Publisher,
