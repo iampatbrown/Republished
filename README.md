@@ -64,7 +64,7 @@ There are multiple approach to observing changes to nested observable objects. T
 
 ## Tools
 
-#### Republished
+### Republished
 
 A type that republishes changes of observable objects:
 
@@ -95,7 +95,7 @@ class AppModel: ObservableObject {
 }
 ```
 
-#### synchronize(\_:\_:)
+### synchronize(\_:\_:)
 
 Synchronizes published properties:
 
@@ -121,7 +121,7 @@ class AppModel: ObservableObject {
 }
 ```
 
-#### ScopedValue
+### ScopedValue
 
 A property wrapper type for observing a property on an environment object supplied by a parent or ancestor view.
 
@@ -135,7 +135,7 @@ struct CountView: View {
 }
 ```
 
-#### ScopedBinding
+### ScopedBinding
 
 A property wrapper type that can read and write a value on an environment object supplied by a parent or ancestor view.
 
@@ -153,7 +153,7 @@ struct CounterView: View {
 }
 ```
 
-#### ScopedAction
+### ScopedAction
 
 A property wrapper type that can call a function on an environment object supplied by a parent or ancestor view.
 
@@ -173,7 +173,7 @@ struct CounterView: View {
 }
 ```
 
-#### UnobservedEnvironmentObject
+### UnobservedEnvironmentObject
 
 A property wrapper type for accessing an object supplied by a parent or ancestor view without observing changes.
 
