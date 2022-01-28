@@ -1,6 +1,7 @@
 import Combine
 @testable import Republished
 import XCTest
+import SwiftUI
 
 enum Foo {
   case `default`
