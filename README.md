@@ -4,7 +4,6 @@ A collection of tools for working with observable objects in SwiftUI.
 
 * [Motivation](#motivation)
 * [Tools](#tools)
-* [Examples](#examples)
 * [Installation](#installation)
 
 
@@ -192,7 +191,52 @@ struct CounterView: View {
 }
 ```
 
-## Examples
+### Dependency
+
+Similar to SwiftUI's `@Environment` attribute but for observable objects instead of views. 
+
+```swift
+class TwentySideDie: ObservableObject {
+  @Dependency(\.numberGenerator) var numberGenerator
+  @Published var value: Int = 20
+
+  func roll() {
+    self.value = self.numberGenerator.random(in: 1...20)
+  }
+}
+```
+
+### Dependencies
+
+Dependencies can be defined by defining a type that conforst to the `DependencyKey` protocol, and then extending the dependencies structure with a new property:
+
+```swift
+struct NumberGenerator {
+  var random: (ClosedRange<Int>) -> Int
+
+  func random(in range: ClosedRange<Int>) -> Int {
+    self.random(range)
+  }
+
+  static let `default` = Self { Int.random(in: $0) }
+}
+
+enum NumberGeneratorKey: DependencyKey {
+  static let defaultValue: NumberGenerator = .default
+}
+
+extension Dependencies {
+  var numberGenerator: NumberGenerator {
+    get { self[NumberGeneratorKey.self] }
+    set { self[NumberGeneratorKey.self] = newValue }
+  }
+}
+```
+
+
+### WithDependencies 
+
+### withDependencies(\_:\_:)
 
 ## Installation
 

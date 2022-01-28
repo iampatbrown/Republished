@@ -18,6 +18,14 @@ class AppViewModel: ObservableObject {
   }
 }
 
+struct CounterTabItem: View {
+  @ScopedValue(\AppViewModel.counter.count) var count
+  var body: some View {
+    Self._printChanges()
+    return Text("Counter \(self.count)")
+  }
+}
+
 struct ProfileTabItem: View {
   @ScopedValue(\AppViewModel.profile.favorites.count) var favoritesCount
   var body: some View {
@@ -32,9 +40,7 @@ struct ContentView: View {
     return TabView {
       CounterView()
         .tabItem {
-          WithScopedValue(\AppViewModel.counter.count) { count in
-            Text("Counter \(count)")
-          }
+          CounterTabItem()
         }
 
       ProfileView()
